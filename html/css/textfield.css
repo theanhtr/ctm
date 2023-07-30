@@ -1,0 +1,93 @@
+.textfield-group {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.textfield-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  font-size: var(--font-size-default);
+}
+
+.textfield--focus .textfield__data-container {
+  border: 2px solid var(--green-300) !important;
+}
+
+.textfield--error .textfield__data-container {
+  border: 2px solid var(--red-500) !important;
+}
+
+.textfield--disable .textfield__data-container {
+  background-color: var(--grey-400) !important;
+}
+
+.textfield--verifying .textfield__data-container {
+  border: 2px solid var(--green-400) !important;
+}
+
+.textfield--verifying .fa-spinner {
+  color: var(--green-400);
+  animation: spin 0.8s linear infinite;
+}
+
+.textfield--validate .textfield__data-container {
+  border: 2px solid var(--green-500) !important;
+}
+
+.textfield--validate .fa-circle-check {
+  color: var(--green-500);
+}
+
+.textfield--pressed
+  .textfield__data-container
+  .textfield__data-container__icon {
+  background-color: var(--grey-400) !important;
+}
+
+.textfield__label-container {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.textfield__data-container {
+  display: flex;
+  height: var(--height-component);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 0px 0px 12px;
+  border: 1px solid var(--grey-500);
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
+}
+
+.textfield__data-container__input-container input {
+  background-color: inherit;
+}
+
+.textfield__data-container:hover {
+  cursor: pointer;
+  background-color: var(--grey-200) !important;
+}
+
+.textfield__input-group {
+  outline: none;
+  border: none;
+  padding: 0px;
+}
+
+.textfield__data-container__icon {
+  height: 100%;
+  padding: 0px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.textfield__error-container {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--red-500);
+  cursor: default;
+}

@@ -1,0 +1,65 @@
+.toast-message-group {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.toast-message-container {
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--height-component);
+  width: 400px;
+  padding: 6px 16px;
+  border: 1px solid var(--grey-500);
+  border-radius: var(--border-radius);
+}
+
+.toast-message__content-left {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+.toast-message__icon,
+.toast-message__title {
+  color: var(--green-500);
+}
+
+.toast-message__icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.toast-message__title {
+  font-weight: bold;
+}
+
+.toast-message__body-text {
+  margin-left: 3px;
+}
+
+.toast-message__content-right {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+.toast-message__action {
+  margin-right: 16px;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.toast-message__action:hover {
+  cursor: pointer;
+}
+
+.toast-message__close-icon {
+  color: var(--grey-500);
+}
+
+.toast-message__close-icon:hover {
+  cursor: pointer;
+}

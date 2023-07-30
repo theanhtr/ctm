@@ -1,0 +1,36 @@
+.radio-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  font-size: var(--font-size-default);
+}
+
+.radio-input__label-container {
+  font-weight: bold;
+}
+
+.radio-input__data-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.radio-input__option-container {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  margin-top: 12px;
+}
+
+.radio-input__option-container label {
+  margin-left: 8px;
+}
+
+.radio-input__error-container {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--red-500);
+  cursor: default;
+}

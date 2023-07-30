@@ -1,0 +1,76 @@
+/* checkbox style */
+input[type="checkbox"] {
+  appearance: none; /* vô hiệu hóa giao diện mặc định */
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  background-color: white;
+  border-radius: var(--border-radius-default);
+  border: 2px solid #757575;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+input[type="checkbox"]::after {
+  background-image: url(../../assets/icon/checkbox-checked.png);
+  background-size: 10px 10px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  content: "";
+  width: 20px;
+  height: 20px;
+  display: none;
+}
+
+input[type="checkbox"]:hover {
+  background-color: var(--border-color-default);
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--primary-color);
+  border: none;
+}
+
+input[type="checkbox"]:checked:after {
+  display: block;
+}
+
+/* input required */
+.input-required label::after {
+  content: " *";
+  color: red;
+}
+
+/* search input style */
+.search-input-container {
+  height: 36px;
+  width: 385px;
+  min-width: 180px;
+  border: 1px solid var(--border-color-default);
+  border-radius: var(--border-radius-default);
+  padding: 0px 12px;
+  background-color: #f1f2f3;
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.search-input__search-icon {
+  height: 16px;
+  width: 16px;
+  background-position: center;
+  background-image: url(../../assets/icon/search.png);
+  background-repeat: no-repeat;
+  cursor: pointer;
+  flex: 0 0 16px;
+}
+
+.search-input__input {
+  padding: 0px;
+  outline: none;
+  border: none;
+  background-color: inherit;
+  flex: 1;
+}

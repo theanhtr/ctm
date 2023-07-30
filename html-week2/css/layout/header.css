@@ -1,0 +1,143 @@
+.header {
+  height: 56px;
+  width: 100%;
+  float: left;
+  display: flex;
+}
+
+.header__left {
+  width: 200px;
+  height: 100%;
+  padding-left: 16px;
+  column-gap: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.header__left .toggle-icon {
+  width: 24px;
+  height: 24px;
+  background-size: 24px 24px;
+  background-image: url(../../assets/img/toggle.png);
+  cursor: pointer;
+}
+
+.header__left .logo {
+  flex: 1;
+  height: 36px;
+  background-size: auto 36px;
+  background-image: url(../../assets/cukcuk-logo.png);
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.header__right {
+  height: 100%;
+  flex: 1;
+  padding: 0px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header__action-right {
+  display: flex;
+  align-items: center;
+  column-gap: 24px;
+}
+
+.header__action-right .notification {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background-image: url(../../assets/icon/bell.png);
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  background-position: center center;
+}
+
+.header__action-right .setting {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  background-image: url(../../assets/icon/setting.png);
+  background-repeat: no-repeat;
+  background-size: 24px 24px;
+}
+
+.header__action-right .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color-default);
+  cursor: pointer;
+  background-image: url(../../assets/icon/avatar-default.png);
+  background-repeat: no-repeat;
+  background-size: 32px 32px;
+}
+
+/* menu */
+.header__menu {
+  height: 90px;
+  width: 100%;
+  position: fixed;
+  top: 56px;
+  left: 0px;
+  background-color: red;
+  background-color: white;
+  box-shadow: 1px 2px 8px rgba(0, 0, 0, 0.24);
+  z-index: 100;
+  border-top: 1px solid var(--border-color-default);
+  outline: none;
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+.menu__subapp {
+  height: 100%;
+  width: 120px;
+  padding: 14px 12px;
+  padding-bottom: 0px;
+  display: flex;
+  align-items: center;
+  row-gap: 8px;
+  flex-direction: column;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menu__subapp:hover {
+  background-color: #f2f2f2;
+}
+
+.menu__subapp:hover .subapp__logo {
+  animation: app-logo-scale--up 0.25s ease forwards;
+  flex: 0 0 40px;
+}
+
+.menu__subapp:hover .subapp__name {
+  animation: subapp__name--up 0.25s ease forwards;
+}
+
+.menu__subapp:not(:hover) .subapp__logo {
+  animation: app-logo-scale--down 0.25s ease forwards;
+  flex: 0 0 36px;
+}
+
+.menu__subapp:not(:hover) .subapp__name {
+  animation: subapp__name--down 0.25s ease forwards;
+}
+
+.menu__subapp .subapp__logo {
+  height: 36px;
+  width: 36px;
+  flex: 0 0 36px;
+}
+
+.menu__subapp .subapp__name {
+  font-size: 14px;
+  color: #1f1f1f;
+  text-align: center;
+}

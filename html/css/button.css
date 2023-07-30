@@ -1,0 +1,163 @@
+.btn-group {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+/* combo button */
+.combo-btn-container {
+  color: white;
+  height: var(--height-component);
+  width: auto;
+  display: flex;
+}
+
+.combo-btn--disable > .combo-btn__infor-container,
+.combo-btn--disable > .combo-btn__dropdown--container {
+  background-color: var(--green-200) !important;
+  cursor: default !important;
+}
+
+.combo-btn--pressed > .combo-btn__infor-container,
+.combo-btn--pressed > .combo-btn__dropdown--container {
+  background-color: var(--green-600) !important;
+}
+
+.combo-btn-container:hover > .combo-btn__infor-container,
+.combo-btn-container:hover > .combo-btn__dropdown--container {
+  cursor: pointer;
+  background-color: var(--green-400);
+}
+
+.combo-btn__infor-container {
+  background-color: var(--green-500);
+  border-top-left-radius: var(--border-radius);
+  border-bottom-left-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 16px 0px 12px;
+}
+
+.combo-btn__icon {
+  margin-right: 4px;
+}
+
+.combo-btn__label {
+  font-size: var(--font-size-default);
+}
+
+.combo-btn__dropdown--container {
+  font-size: var(--font-size-default);
+  margin-left: 1px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 12px;
+  border-top-right-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  background-color: var(--green-500);
+}
+
+/* main button */
+.main-btn-container {
+  color: white;
+  height: var(--height-component);
+  width: auto;
+  display: flex;
+  justify-content: center;
+  align-self: center;
+}
+
+.main-btn--disable > .main-btn__infor-container {
+  background-color: var(--green-200) !important;
+  cursor: default !important;
+}
+
+.main-btn--pressed > .main-btn__infor-container {
+  background-color: var(--green-600) !important;
+}
+
+.main-btn-container:hover > .main-btn__infor-container {
+  cursor: pointer;
+  background-color: var(--green-400);
+}
+
+.main-btn__infor-container {
+  background-color: var(--green-500);
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 12px;
+  min-width: 80px;
+  box-sizing: border-box;
+}
+
+.main-btn__label {
+  font-size: var(--font-size-default);
+}
+
+/* icon button */
+.icon-btn-container {
+  height: var(--height-component);
+  background-color: rgba(0, 255, 0, 0.2);
+  color: #4fb73b;
+  border-radius: var(--border-radius);
+  padding: 0px 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-btn-container > .icon-btn__icon {
+  font-size: 20px;
+}
+
+.icon-btn-container:hover {
+  cursor: pointer;
+}
+
+/* link button */
+.link-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
+  height: var(--height-component);
+  color: var(--green-500);
+}
+
+.link-btn-container:hover {
+  color: var(--green-400) !important;
+  cursor: pointer;
+}
+
+.link-btn--disable {
+  color: var(--green-200) !important;
+}
+
+.link-btn--pressed {
+  color: var(--green-600) !important;
+}
+
+/* secondary button */
+.secondary-btn-container {
+  height: var(--height-component);
+  min-width: 80px;
+  width: auto;
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 16px;
+  border: 1px solid var(--grey-500);
+  box-sizing: border-box;
+  font-weight: bold;
+}
+
+.secondary-btn-container:hover {
+  color: var(--green-400);
+  border: 1px solid var(--green-400);
+  cursor: pointer;
+}

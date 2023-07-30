@@ -1,0 +1,189 @@
+.m-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.m-table tr {
+  height: 48px;
+  border-bottom: 1px solid var(--border-color-default);
+  position: relative;
+}
+
+.m-table tr td:not(:nth-child(2)),
+.m-table tr th:not(:nth-child(2)) {
+  padding-left: 16px;
+}
+
+.m-table tr td,
+.m-table tr th {
+  padding-right: 16px;
+}
+
+.m-table thead {
+  font-weight: 500;
+  background-color: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.m-table .thead--pinned {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 2px 4px;
+}
+
+.m-table thead th {
+  font-weight: 500;
+  position: relative;
+}
+
+.m-table thead th:not(:first-child):hover {
+  background-color: #dbdbdb;
+}
+
+.th__resize {
+  content: "";
+  background-color: transparent;
+  width: 8px;
+  height: 100%;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  cursor: url(../../assets/icon/resize.png) 10 10, col-resize;
+}
+
+.m-th {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 4px;
+}
+
+.m-th__text {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.m-th__function {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 0px;
+  flex: 1;
+  visibility: hidden;
+}
+
+.m-table thead th:not(:first-child):hover .m-th__function {
+  visibility: unset;
+  width: auto;
+}
+
+.m-table thead th:not(:first-child):hover .m-th__text {
+  width: unset;
+}
+
+.m-th__function .m-th__icon-sort {
+  margin-left: 4px;
+  height: 14px;
+  width: 14px;
+  flex: 0 0 14px;
+  cursor: pointer;
+}
+
+.m-th__right {
+  display: flex;
+  align-items: center;
+}
+
+.m-th__icon-filter {
+  height: 16px;
+  width: 16px;
+  flex: 0 0 16px;
+  cursor: pointer;
+}
+
+.m-table tbody td {
+  font-weight: 400;
+}
+
+.m-table th,
+.m-table td {
+  padding: 0px;
+  margin: 0px;
+}
+
+.m-table .selected-checkbox {
+  width: 16px;
+  height: 16px;
+
+  border-radius: var(--border-radius-default);
+}
+
+.m-table__checkbox-column {
+  padding: 0px 16px !important;
+  text-align: center !important;
+  width: 48px;
+}
+
+.m-table tbody tr:hover {
+  background-color: #dbdbdb;
+}
+
+/*
+* cách để tính vị trí ban đầu của row__function tính từ cạnh bên phải của table
+* 200px: chiều dài sidebar khi chưa thu gọn
+* 48px: padding của page-container
+* 72px: độ rộng của 2 icon 
+* 8px: column gap
+* 20px: khoảng cách từ viền table right đến row__function
+*/
+.m-table .row__function {
+  position: absolute;
+  left: calc(100vw - 200px - 48px - 72px - 8px - 20px);
+  padding: 0px !important;
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+  height: 100%;
+  visibility: hidden;
+}
+
+.row__function-element {
+  height: 36px;
+  width: 36px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: rgba(0, 0, 0, 0.078) 0px 3px 6px;
+  cursor: pointer;
+}
+
+.row__function-icon {
+  height: 24px;
+  width: 24px;
+}
+
+.m-table tr:hover .row__function {
+  visibility: unset;
+}
+
+.row__avatar-name {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  column-gap: 8px;
+}
+
+.row__avatar {
+  height: 24px;
+  width: 24px;
+  flex: 0 0 24px;
+  border-radius: 50%;
+}
+
+.row--selected {
+  background-color: #f1ffef;
+}

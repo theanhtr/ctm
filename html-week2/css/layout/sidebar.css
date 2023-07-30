@@ -1,0 +1,85 @@
+.sidebar {
+  height: calc(100vh - 56px);
+  width: 200px;
+  float: left;
+  background-color: #041434;
+}
+
+.sidebar__top {
+  padding: 20px 12px;
+  width: 100%;
+  height: calc(100% - 44px);
+  display: flex;
+  flex-direction: column;
+  row-gap: 4px;
+}
+
+.menu-item {
+  display: flex;
+  column-gap: 12px;
+  height: 44px;
+  width: 100%;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-default);
+  color: #869ab8;
+}
+
+.menu-item:hover {
+  background-color: rgba(167, 196, 255, 0.16);
+  cursor: pointer;
+  color: white;
+}
+
+.sidebar__icon {
+  height: 24px;
+  width: 24px;
+  flex: 0 0 24px;
+}
+
+.sidebar__text {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.sidebar__bottom {
+  border-top: 1px solid var(--border-color-default);
+
+  height: 44px;
+  width: 100%;
+  column-gap: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0px 24px;
+  cursor: pointer;
+  color: #869ab8;
+}
+
+.sidebar__bottom:hover {
+  color: white;
+  background-color: rgba(167, 196, 255, 0.16);
+}
+
+.siderbar__bottom__icon {
+  background-image: url(../../assets/icon/arrowhead-left-outline@2x.png);
+  background-size: auto 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* side bar khi thu gọn */
+.sidebar--collapse {
+  width: 72px;
+}
+
+.sidebar--collapse .sidebar__text {
+  visibility: hidden;
+}
+
+.sidebar--collapse .siderbar__bottom__icon {
+  background-image: url(../../assets/icon/arrowhead-right-outline@2x.png);
+}
+
+.sidebar--collapse + .main-container {
+  width: calc(100vw - 72px);
+}

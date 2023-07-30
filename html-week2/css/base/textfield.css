@@ -1,0 +1,65 @@
+.textfield {
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+}
+
+.textfield__input-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--border-color-default);
+  border-radius: var(--border-radius-default);
+  padding-left: 12px;
+  padding-right: 8px;
+}
+
+.textfield__input {
+  flex: 1;
+  height: 36px;
+  border: none;
+  outline: none;
+  background-color: inherit;
+}
+
+.textfield__icon {
+  height: 20px;
+  width: 20px;
+  flex: 0 0 20px;
+  cursor: pointer;
+}
+
+.textfield__error {
+  color: #e61d1d;
+  font-size: 12px;
+  font-weight: 400;
+  display: none;
+}
+
+.textfield__input-container:hover {
+  background-color: #f6f6f6;
+  border: 1px solid #ebebeb;
+}
+
+.textfield--focus .textfield__input-container {
+  border: 1px solid --primary-color;
+}
+
+.textfield--error .textfield__input-container {
+  border: 1px solid #e61d1d;
+}
+
+.textfield--error .textfield__error {
+  display: block;
+}
+
+.textfield--disable .textfield__input-container,
+.textfield--disable .textfield__icon {
+  background-color: #ebebeb;
+  cursor: default;
+}
+
+.textfield--validate .textfield__input-container,
+.textfield--verifying .textfield__input-container {
+  border: 1px solid --primary-color;
+}

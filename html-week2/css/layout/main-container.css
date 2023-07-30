@@ -1,0 +1,7 @@
+.main-container {
+  height: calc(100vh - 56px);
+  width: calc(100vw - 200px);
+  float: left;
+  background-color: #eeeff1;
+  padding: 24px;
+}

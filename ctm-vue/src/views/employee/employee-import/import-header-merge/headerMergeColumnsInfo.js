@@ -1,0 +1,38 @@
+export var headerMergeColumnsInfo = [
+  {
+    id: "isRequired",
+    name: "Thông tin bắt buộc",
+    size: 200,
+    textAlign: "center",
+    format: "checkbox",
+    isShow: true,
+    isPin: false,
+  },
+  {
+    id: "showName",
+    name: "Cột trên phần mềm",
+    size: 245,
+    textAlign: "left",
+    format: "text",
+    isShow: true,
+    isPin: false,
+  },
+  {
+    id: "excelColumnIndex",
+    name: "Cột trên tệp dữ liệu",
+    size: 255,
+    textAlign: "left",
+    format: "input-combobox",
+    isShow: true,
+    isPin: false,
+  },
+  {
+    id: "description",
+    name: "Diễn giải",
+    size: 765,
+    textAlign: "left",
+    format: "text",
+    isShow: true,
+    isPin: false,
+  },
+];

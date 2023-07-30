@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý nhân viên | Misa CukCuk</title>
+    <link rel="stylesheet" href="../../css/main.css" />
+    <link rel="stylesheet" href="../../css/views/employee.css" />
+    <link rel="icon" href="../../assets/img/favicon.ico" type="image/x-icon" />
+  </head>
+  <body>
+    <div class="header">
+      <div class="header__left">
+        <div
+          class="toggle-icon"
+          title="Misa App"
+          onclick="showHideHeaderMenu()"
+        ></div>
+
+        <div class="logo" title="Misa CukCuk"></div>
+      </div>
+      <div class="header__right">
+        <div class="search-input-container">
+          <div title="Tìm kiếm" class="search-input__search-icon"></div>
+          <input class="search-input__input" placeholder="Tìm kiếm" />
+        </div>
+
+        <div class="header__action-right">
+          <div class="notification" title="Thông báo"></div>
+          <div
+            onclick="createFakeToast()"
+            class="setting"
+            title="Cài đặt"
+          ></div>
+          <div class="avatar" title="Thông tin người dùng"></div>
+        </div>
+      </div>
+      <div class="header__menu">
+        <a class="menu__subapp" href="https://amisapp.misa.vn/">
+          <img
+            src="../../assets/img/amis-system.svg"
+            alt="app"
+            class="subapp__logo"
+          />
+          <div class="subapp__name text-overflow-ellipsis">Hệ thống</div>
+        </a>
+        <a class="menu__subapp" href="https://amisapp.misa.vn/">
+          <img
+            src="../../assets/img/amis-chat.svg"
+            alt="app"
+            class="subapp__logo"
+          />
+          <div class="subapp__name">AMIS Chat</div>
+        </a>
+        <a class="menu__subapp" href="https://amisapp.misa.vn/">
+          <img
+            src="../../assets/img/amis-contact.svg"
+            alt="app"
+            class="subapp__logo"
+          />
+          <div class="subapp__name">Danh bạ</div>
+        </a>
+        <a class="menu__subapp" href="https://amisapp.misa.vn/">
+          <img
+            src="../../assets/img/amis-app-logo.svg"
+            alt="app"
+            class="subapp__logo"
+          />
+          <div class="subapp__name">Tài sản</div>
+        </a>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar__top">
+        <div class="menu-item" title="Tổng quan">
+          <div class="sidebar__icon home-icon"></div>
+          <div class="sidebar__text">Tổng quan</div>
+        </div>
+        <div class="menu-item" title="Hồ sơ">
+          <div class="sidebar__icon user-icon"></div>
+          <div class="sidebar__text">Hồ sơ</div>
+        </div>
+        <div class="menu-item" title="Hợp đồng">
+          <div class="sidebar__icon contract-icon"></div>
+          <div class="sidebar__text">Hợp đồng</div>
+        </div>
+      </div>
+      <div class="sidebar__bottom" onclick="expandCollapseSidebar(event)">
+        <div class="sidebar__icon siderbar__bottom__icon"></div>
+        <div class="sidebar__text">Thu gọn</div>
+      </div>
+    </div>
+
+    <div class="main-container">
+      <div class="page">
+        <div class="page__header">
+          <div class="page__title">
+            <div class="page__title-text">Quản lý nhân viên</div>
+            <div
+              class="page__title-icon"
+              title="Bộ lọc chung"
+              onclick="showPageTitleFilter(event)"
+            ></div>
+            <div class="page__title-filter" id="employee__title-filter">
+              <div class="title-filter__item">Tất cả</div>
+              <div class="title-filter__item">Đang làm việc</div>
+              <div class="title-filter__item">Đã nghỉ việc</div>
+              <div class="title-filter__item">Của tôi</div>
+            </div>
+          </div>
+          <div class="page__button">
+            <button
+              class="m-button style-button"
+              onclick="showPopup('#dialog-test')"
+            >
+              <img class="button__icon" src="../../assets/icon/plus.png" />
+              <div class="button__title">Thêm mới</div>
+            </button>
+            <button
+              class="cb-button style-button"
+              onclick="showPopup('#popup-test')"
+            >
+              <img class="button__icon" src="../../assets/icon/plus.png" />
+              <div class="button__title">Thêm mới</div>
+              <div class="button__dropdown" onclick="clickDropdownCbBtn(event)">
+                <img
+                  src="../../assets/icon/down.png"
+                  alt="dd"
+                  class="button__dropdown-icon"
+                />
+              </div>
+              <div class="cb-button__dropdown">
+                <div class="cb-button__item" onclick="showPopup('#popup-test')">
+                  Thêm data theo danh mục
+                </div>
+              </div>
+            </button>
+            <button class="i-button style-button" title="Thông tin thêm">
+              <img class="button__icon" src="../../assets/icon/more.png" />
+            </button>
+          </div>
+        </div>
+        <div class="page__container">
+          <div class="filter">
+            <div class="filter__left">
+              <div class="search-input-container">
+                <div class="search-input__search-icon"></div>
+                <input
+                  class="search-input__input"
+                  placeholder="Tìm kiếm trong danh sách"
+                />
+              </div>
+              <div class="multi-field__action-box">
+                <div class="selected-count">Đã chọn <strong></strong></div>
+                <div class="selected-all">Bỏ chọn</div>
+                <div class="selected-delete">
+                  <img
+                    class="selected-delete__icon"
+                    src="../../assets/icon/delete.png"
+                    alt="Xóa"
+                  />
+                  <div class="selected-delete__text">Xóa</div>
+                </div>
+              </div>
+            </div>
+            <div class="filter__right">
+              <div class="dropdownlist-container">
+                <div class="dropdownlist__input-container">
+                  <input
+                    type="text"
+                    class="dropdownlist__input"
+                    placeholder="Chọn công ty"
+                  />
+                  <div class="dropdownlist__icon">
+                    <img
+                      height="24px"
+                      src="../../assets/icon/arrow-down.svg"
+                      alt="error"
+                    />
+                  </div>
+                </div>
+                <div class="dropdownlist__data">
+                  <div
+                    class="dropdownlist__option dropdownlist__option--selected"
+                  >
+                    Misa 1
+                  </div>
+                  <div class="dropdownlist__option">Misa 2</div>
+                  <div class="dropdownlist__option">Misa 3</div>
+                </div>
+              </div>
+              <button class="i-button style-button" title="Lọc bảng">
+                <img class="button__icon" src="../../assets/icon/filter.png" />
+              </button>
+              <button
+                class="i-button style-button setting-button"
+                title="Cài đặt bảng"
+              >
+                <img
+                  class="button__icon"
+                  src="../../assets/icon/setting-green.png"
+                />
+              </button>
+            </div>
+          </div>
+          <div class="page__table" onscroll="scrollTabel(event)">
+            <table class="m-table" id="table-test">
+              <thead>
+                <tr>
+                  <th
+                    class="m-table__checkbox-column"
+                    style="max-width: 48px; min-width: 48px; width: 48px"
+                  >
+                    <input type="checkbox" class="selected-checkbox" />
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--code-width);
+                      min-width: var(--code-width);
+                      width: var(--code-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Code</div>
+                      <div class="m-th__function"></div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--full-name-width);
+                      min-width: var(--full-name-width);
+                      width: var(--full-name-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Full name</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--gender-width);
+                      min-width: var(--gender-width);
+                      width: var(--gender-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Gender</div>
+                      <div class="m-th__function"></div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--address-width);
+                      min-width: var(--address-width);
+                      width: var(--address-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Address</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--dob-width);
+                      min-width: var(--dob-width);
+                      width: var(--dob-width);
+                    "
+                  >
+                    <div class="m-th text-align--center">
+                      <div class="m-th__text">Date Of Birth</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--email-width);
+                      min-width: var(--email-width);
+                      width: var(--email-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Email</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--phone-number-width);
+                      min-width: var(--phone-number-width);
+                      width: var(--phone-number-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Phone Number</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--debit-amount-width);
+                      min-width: var(--debit-amount-width);
+                      width: var(--debit-amount-width);
+                    "
+                  >
+                    <div class="m-th text-align--right">
+                      <div class="m-th__text">Debit Amount</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                  <th
+                    style="
+                      max-width: var(--company-width);
+                      min-width: var(--company-width);
+                      width: var(--company-width);
+                    "
+                  >
+                    <div class="m-th text-align--left">
+                      <div class="m-th__text">Company</div>
+                      <div class="m-th__function">
+                        <img
+                          src="../../assets/icon/arrow-down-table.png"
+                          alt="sort"
+                          class="m-th__icon-sort"
+                        />
+                        <img
+                          src="../../assets/icon/filter.png"
+                          alt="sort"
+                          class="m-th__icon-filter"
+                        />
+                      </div>
+                    </div>
+                    <div class="th__resize"></div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="page__footer">
+            <div class="page__footer-left">
+              <div class="total-records">Total: 9 records</div>
+            </div>
+            <div class="page__footer-right">
+              <div class="records-per-page__text">Records/Page:</div>
+              <select
+                class="m-select records-per-page__select"
+                name="records-per-page"
+              >
+                <option class="m-select--option" value="10">10</option>
+                <option class="m-select--option" value="20">20</option>
+                <option class="m-select--option" value="30">30</option>
+              </select>
+              <div class="current-page-records">
+                <span class="bold-text">1</span> -
+                <span class="bold-text">9</span> records
+              </div>
+              <div class="page__nav">
+                <div class="page__nav--previous">
+                  <img
+                    src="../../assets/icon/btn-prev-page.svg"
+                    alt="button previous page"
+                    title="Trang trước"
+                  />
+                </div>
+                <div class="page__nav--next">
+                  <img
+                    src="../../assets/icon/btn-next-page.svg"
+                    alt="button next page"
+                    title="Trang sau"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-overlay">
+      <div class="m-popup screen-center" id="popup-test">
+        <div class="m-popup__header">
+          <div class="m-popup__title">Tiêu đề</div>
+          <img
+            src="../../assets/icon/close.png"
+            alt="icon close"
+            class="m__icon--close"
+          />
+        </div>
+        <div class="m-popup__content">
+          <div class="m-popup__description">Mô tả</div>
+          <div class="m-popup__input-control">
+            <div class="date-picker input-required">
+              <label for="go-date" class="date-picker__label label-text"
+                >Chọn ngày đi</label
+              >
+              <div class="date-picker__input-container">
+                <input
+                  type="date"
+                  id="go-date"
+                  class="date-picker__input"
+                  value="2023-06-09"
+                  disabled
+                />
+                <img
+                  src="../../assets/icon/date-picker.svg"
+                  alt="search"
+                  class="date-picker__icon"
+                />
+              </div>
+              <div class="date-picker__picker-container">
+                <div class="picker-container__header">
+                  <div class="picker-container__title">
+                    <div class="picker-container__title-text label-text">
+                      Tháng 6, 2023
+                    </div>
+                    <div class="picker-container__title-icon"></div>
+                  </div>
+                  <div class="picker-container__nav">
+                    <div class="picker-container__prev">
+                      <img
+                        src="../../assets/icon/btn-prev-page.svg"
+                        alt="prev"
+                        class="picker-container__nav-icon"
+                      />
+                    </div>
+                    <div class="picker-container__next">
+                      <img
+                        src="../../assets/icon/btn-next-page.svg"
+                        alt="prev"
+                        class="picker-container__nav-icon"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="picker-container__content">
+                  <div class="picker-container__date--container">
+                    <div class="date__row date__day-of-week">
+                      <div class="date__column">T2</div>
+                      <div class="date__column">T3</div>
+                      <div class="date__column">T4</div>
+                      <div class="date__column">T5</div>
+                      <div class="date__column">T6</div>
+                      <div class="date__column">T7</div>
+                      <div class="date__column">CN</div>
+                    </div>
+                    <div class="date__row">
+                      <div class="date__column"></div>
+                      <div class="date__column"></div>
+                      <div class="date__column"></div>
+                      <div class="date__column">1</div>
+                      <div class="date__column">2</div>
+                      <div class="date__column">3</div>
+                      <div class="date__column">4</div>
+                    </div>
+                    <div class="date__row">
+                      <div class="date__column">5</div>
+                      <div class="date__column">6</div>
+                      <div class="date__column">7</div>
+                      <div class="date__column">8</div>
+                      <div class="date__column date--selected">9</div>
+                      <div class="date__column">10</div>
+                      <div class="date__column">11</div>
+                    </div>
+                    <div class="date__row">
+                      <div class="date__column">12</div>
+                      <div class="date__column">13</div>
+                      <div class="date__column">14</div>
+                      <div class="date__column">15</div>
+                      <div class="date__column">16</div>
+                      <div class="date__column">17</div>
+                      <div class="date__column">18</div>
+                    </div>
+                    <div class="date__row">
+                      <div class="date__column">19</div>
+                      <div class="date__column">20</div>
+                      <div class="date__column">21</div>
+                      <div class="date__column">22</div>
+                      <div class="date__column">23</div>
+                      <div class="date__column">24</div>
+                      <div class="date__column">25</div>
+                    </div>
+                    <div class="date__row">
+                      <div class="date__column">26</div>
+                      <div class="date__column">27</div>
+                      <div class="date__column">28</div>
+                      <div class="date__column">29</div>
+                      <div class="date__column">30</div>
+                      <div class="date__column"></div>
+                      <div class="date__column"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="picker-container__footer">Hôm nay</div>
+              </div>
+            </div>
+
+            <div class="dropdownlist-container">
+              <label for="names" class="dropdownlist__label label-text"
+                >Chọn tên</label
+              >
+              <div class="dropdownlist__input-container">
+                <input
+                  type="text"
+                  class="dropdownlist__input"
+                  placeholder="Chọn tên"
+                  id="names"
+                />
+                <div class="dropdownlist__icon">
+                  <img
+                    height="24px"
+                    src="../../assets/icon/arrow-down.svg"
+                    alt="error"
+                  />
+                </div>
+              </div>
+              <div class="dropdownlist__data">
+                <div
+                  class="dropdownlist__option dropdownlist__option--selected"
+                >
+                  Misa 1
+                </div>
+                <div class="dropdownlist__option">Misa 2</div>
+                <div class="dropdownlist__option">Misa 3</div>
+              </div>
+            </div>
+
+            <div class="combobox combobox-test input-required">
+              <label for="city" class="combobox__label label-text"
+                >Phòng ban</label
+              >
+              <div class="combobox__input-container">
+                <input
+                  placeholder="Chọn phòng ban"
+                  type="text"
+                  id="city-combobox--input"
+                  class="combobox__input"
+                />
+                <div class="combobox__dropdown">
+                  <img
+                    src="../../assets/icon/arrow-down.svg"
+                    alt="dropdown"
+                    class="combobox__icon"
+                  />
+                </div>
+              </div>
+              <div class="combobox__data"></div>
+              <div class="combobox__error">test</div>
+              <div class="m-popup combobox__add-popup">
+                <div class="m-popup__header">
+                  <div class="m-popup__title">Thêm phòng ban</div>
+                  <img
+                    src="../../assets/icon/close.png"
+                    alt="icon close"
+                    class="m__icon--close"
+                  />
+                </div>
+                <div class="m-popup__content">
+                  <div class="m-popup__input-control">
+                    <div class="textfield">
+                      <label for="city-name" class="textfield__label label-text"
+                        >Phòng ban</label
+                      >
+                      <div class="textfield__input-container">
+                        <input
+                          placeholder="Nhập vào tên phòng ban"
+                          type="text"
+                          id="city-name"
+                          class="textfield__input"
+                        />
+                      </div>
+                      <div class="textfield__error"></div>
+                    </div>
+
+                    <div class="textfield">
+                      <label
+                        for="country-name"
+                        class="textfield__label label-text"
+                        >Công ty</label
+                      >
+                      <div class="textfield__input-container">
+                        <input
+                          placeholder="Nhập vào tên công ty"
+                          type="text"
+                          id="country-name"
+                          class="textfield__input"
+                        />
+                      </div>
+                      <div class="textfield__error"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="m-popup__footer">
+                  <button class="s-button style-button">
+                    <div class="button__title">Hủy</div>
+                  </button>
+                  <button class="t-button style-button">Lưu</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="textfield">
+              <label for="employee-name" class="textfield__label label-text"
+                >Field label</label
+              >
+              <div class="textfield__input-container">
+                <input
+                  placeholder="Placeholder"
+                  type="text"
+                  id="employee-name"
+                  class="textfield__input"
+                />
+                <img
+                  src="../../assets/icon/search.png"
+                  alt="search"
+                  class="textfield__icon"
+                />
+              </div>
+              <div class="textfield__error">Test error</div>
+            </div>
+          </div>
+        </div>
+        <div class="m-popup__footer">
+          <button class="s-button style-button">
+            <div class="button__title">Lấy lại mặc định</div>
+          </button>
+          <button class="t-button style-button">Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-overlay">
+      <div class="m-dialog screen-center" id="dialog-test">
+        <div class="m-dialog__header">
+          <div class="m-dialog__title">Tiêu đề</div>
+          <img
+            width="24px"
+            src="../../assets/icon/close.png"
+            alt="icon close"
+            class="m__icon--close"
+          />
+        </div>
+        <div class="m-dialog__content">
+          <div class="m-dialog__content-icon">
+            <img
+              height="24px"
+              width="24px"
+              src="../../assets/icon/question.png"
+            />
+          </div>
+          <div class="m-dialog__content-text">
+            Mô tảMô tảMô tảMô tảMô tảMô tảMô tảMô tảMô tảMô tả
+          </div>
+        </div>
+        <div class="m-dialog__footer">
+          <button class="s-button style-button">
+            <div class="button__title">Hủy</div>
+          </button>
+          <button class="t-button style-button">Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast-group"></div>
+
+    <div class="context-menu">
+      <div class="context__group">
+        <div class="context__item">
+          <img
+            src="../../assets/icon/history.png"
+            alt="history"
+            class="context__icon"
+          />
+          <div class="context__text">History</div>
+        </div>
+        <div class="context__item">
+          <img
+            src="../../assets/icon/download.png"
+            alt="history"
+            class="context__icon"
+          />
+          <div class="context__text">Download</div>
+        </div>
+        <div class="context__item">
+          <img
+            src="../../assets/icon/bookmark.png"
+            alt="history"
+            class="context__icon"
+          />
+          <div class="context__text">Bookmark</div>
+        </div>
+        <div class="context__item">
+          <img
+            src="../../assets/icon/recent.png"
+            alt="history"
+            class="context__icon"
+          />
+          <div class="context__text">Recent tabs</div>
+        </div>
+      </div>
+      <div class="context__line"></div>
+      <div class="context__group">
+        <div class="context__item">
+          <img
+            src="../../assets/icon/share.png"
+            alt="history"
+            class="context__icon"
+          />
+          <div class="context__text">Share</div>
+        </div>
+        <div class="context__item">
+          <img
+            src="../../assets/icon/setting_large.png"
+            alt="history"
+            class="context__icon"
+          />
+          <div class="context__text">Setting</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../js/views/employee.js"></script>
+    <script src="../../js/helper.js"></script>
+    <script src="../../js/base/context-menu.js"></script>
+    <script src="../../js/base/table.js"></script>
+    <script src="../../js/base/toast.js"></script>
+    <script src="../../js/base/popup.js"></script>
+    <script src="../../js/base/button.js"></script>
+    <script src="../../js/base/combobox.js"></script>
+    <script src="../../js/layout/header.js"></script>
+    <script src="../../js/layout/sidebar.js"></script>
+    <script src="../../js/layout/page.js"></script>
+  </body>
+</html>

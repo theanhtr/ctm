@@ -1,0 +1,83 @@
+:root {
+  /**
+  * xác định chiều rộng ban đầu của table chính
+  */
+  --code-width: 80px;
+  --full-name-width: 240px;
+  --gender-width: 120px;
+  --address-width: 500px;
+  --dob-width: 250px;
+  --email-width: 350px;
+  --phone-number-width: 200px;
+  --debit-amount-width: 200px;
+  --company-width: 350px;
+}
+
+.setting-button {
+  border: 1px solid --primary-color;
+  background-color: #f4fff2;
+}
+
+.page .filter__right > .dropdownlist-container {
+  width: 260px;
+}
+
+.home-icon {
+  background-image: url(../../assets/icon/home.png);
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.user-icon {
+  background-image: url(../../assets/icon/user.png);
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.contract-icon {
+  background-image: url(../../assets/icon/contract.png);
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.menu-item:hover .home-icon {
+  background-image: url(../../assets/icon/home-hover.png);
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.menu-item:hover .user-icon {
+  background-image: url(../../assets/icon/user-hover.png);
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.menu-item:hover .contract-icon {
+  background-image: url(../../assets/icon/contract-hover.png);
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* demo */
+.dropdownlist__input-container + .dropdownlist__data {
+  display: none;
+}
+
+.dropdownlist__input-container:hover + .dropdownlist__data {
+  display: block;
+}
+
+/* demo */
+.date-picker__input-container + .date-picker__picker-container {
+  display: none;
+}
+
+.date-picker__input-container:hover + .date-picker__picker-container {
+  display: flex;
+}

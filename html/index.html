@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./css/global.css" />
+    <link rel="stylesheet" href="./css/button.css" />
+    <link rel="stylesheet" href="./css/textfield.css" />
+    <link rel="stylesheet" href="./css/dialog.css" />
+    <link rel="stylesheet" href="./css/toast-message.css" />
+    <link rel="stylesheet" href="./css/popup.css" />
+    <link rel="stylesheet" href="./css/form.css" />
+    <link rel="stylesheet" href="./css/radio.css" />
+    <link rel="stylesheet" href="./css/table.css" />
+    <link rel="stylesheet" href="./css/combobox.css" />
+    <link rel="stylesheet" href="./css/combobox-multiselect.css" />
+  </head>
+  <br>
+    <!--container chứa các button-->
+    <br />
+    Button
+    <div class="btn-group">
+      <!--combo button-->
+      <div class="combo-btn-container">
+        <div class="combo-btn__infor-container">
+          <div class="combo-btn__icon">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <div class="combo-btn__label">Button</div>
+        </div>
+        <div class="combo-btn__dropdown--container">
+          <i class="fa-solid fa-angle-down"></i>
+        </div>
+      </div>
+
+      <!--main button-->
+      <div class="main-btn-container">
+        <div class="main-btn__infor-container">
+          <div class="combo-btn__label">Button</div>
+        </div>
+      </div>
+
+      <!--icon button-->
+      <div class="icon-btn-container">
+        <div class="icon-btn__icon">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+      </div>
+
+      <!--link button-->
+      <div class="link-btn-container">
+        <div class="link-btn__label">Button</div>
+      </div>
+
+      <!--secondary button-->
+      <div class="secondary-btn-container">
+        <div class="secondary-btn__label">Button</div>
+      </div>
+    </div>
+
+    <br />
+    Textfield
+    <div class="textfield-group">
+      <div class="textfield-container">
+        <div class="textfield__label-container">
+          <label for="textfield__input">Field label <span class="input__required">*</span></label>
+        </div>
+        <div class="textfield__data-container">
+          <div class="textfield__data-container__input-container">
+            <input
+              id="textfield__input"
+              class="textfield__input-group"
+              placeholder="Place holder"
+            />
+          </div>
+
+          <div class="textfield__data-container__icon">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+        </div>
+        <div class="textfield__error-container">Không được để trống</div>
+      </div>
+    </div>
+
+    <br />
+    Dialog
+    <div class="dialog-group">
+      <div class="dialog-container">
+        <div class="dialog__header">
+          <div class="dialog__header-title">Tiêu đề</div>
+          <div class="dialog__header-close">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+        </div>
+        <div class="dialog__content">
+          <p class="dialog__content-infor">Mô tả</p>
+        </div>
+        <div class="dialog__footer">
+          <!--secondary button-->
+          <div class="secondary-btn-container">
+            <div class="secondary-btn__label">Button 2</div>
+          </div>
+          <!--main button-->
+          <div class="main-btn-container">
+            <div class="main-btn__infor-container">
+              <div class="combo-btn__label">Button 1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    Toast Message
+    <div class="toast-message-group">
+      <div class="toast-message-container">
+        <div class="toast-message__content-left">
+          <div class="toast-message__icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="toast-message__title">Thành công!</div>
+          <div class="toast-message__body-text">Công việc đã bị xóa.</div>
+        </div>
+        <div class="toast-message__content-right">
+          <div class="toast-message__action">Hoàn tác</div>
+          <div class="toast-message__close-icon">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    Popup
+    <div class="popup-overlay">
+      <div class="popup-container">
+        <div class="popup__header">
+          <div class="popup__header-title">Khuyến mại/Ưu đãi</div>
+          <div class="popup__header-close">
+            <i class="fa-solid fa-xmark"></i>
+          </div>
+        </div>
+        <div class="popup__content">
+          <div class="popup__content-image">
+            <img src="./assets/test_image.jpg" alt="promotion" />
+          </div>
+          <p class="popup__content-infor">Mô tả</p>
+        </div>
+        <div class="popup__footer">
+          <!--main button-->
+          <div class="main-btn-container">
+            <div class="main-btn__infor-container">
+              <div class="combo-btn__label">Button 1</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    Form
+    <div class="form-overlay">
+      <div class="form-container">
+        <div class="form__header">
+          <div class="form__header-title">Đăng ký tài khoản</div>
+        </div>
+        <div class="form__content">
+          <div class="textfield-container form__input">
+            <div class="textfield__label-container">
+              <label for="textfield__input">Họ và tên <span class="input__required">*</span></label>
+            </div>
+            <div class="textfield__data-container">
+              <div class="textfield__data-container__input-container">
+                <input
+                  id="textfield__input"
+                  class="textfield__input-group"
+                  placeholder="Họ tên đầy đủ"
+                />
+              </div>
+            </div>
+            <!-- <div class="textfield__error-container">Không được để trống</div> -->
+          </div>
+
+          <div class="radio-input-container form__input">
+            <div class="radio-input__label-container">
+              <label>Giới tính</label>
+            </div>
+            <div class="radio-input__data-container">
+              <div class="radio-input__option-container">
+                <input
+                type="radio"
+                class="radio-input__input-group"
+                id="male"
+                name="gender"
+              />
+                <label for="male">Nam</label>
+              </div>
+              
+              <div class="radio-input__option-container">
+                <input
+                  type="radio"
+                  class="radio-input__input-group"
+                  id="female"
+                  name="gender"
+                />
+                <label for="female">Nữ</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="textfield-container form__input">
+            <div class="textfield__label-container">
+              <label for="textfield__input">Ngày sinh</label>
+            </div>
+            <div class="textfield__data-container">
+              <div class="textfield__data-container__input-container">
+                <input
+                  id="textfield__input"
+                  class="textfield__input-group"
+                  placeholder="dd/mm/yyyy"
+                />
+              </div>
+    
+              <div class="textfield__data-container__icon">
+                <i class="fa-solid fa-calendar"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="textfield-container form__input">
+            <div class="textfield__label-container">
+              <label for="textfield__input">Địa chỉ email</label>
+            </div>
+            <div class="textfield__data-container">
+              <div class="textfield__data-container__input-container">
+                <input
+                  id="textfield__input"
+                  class="textfield__input-group"
+                  placeholder="example@email.com"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form__footer">
+          <!--secondary button-->
+          <div class="secondary-btn-container">
+            <div class="secondary-btn__label">Hủy</div>
+          </div>
+          <!--main button-->
+          <div class="main-btn-container">
+            <div class="main-btn__infor-container">
+              <div class="combo-btn__label">Đăng ký</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    Data tables
+    <div class="table-overlay">
+      <table class="table-container">
+        <thead class="table__header-container">
+          <tr class="table__header-row">
+            <th class="table__checked">
+              <input type="checkbox" class="select-all" />
+            </th>
+            <th>Header 1</th>
+            <th>
+              Header 2
+              <i class="fa-solid fa-regular fa-arrow-down"></i>
+              <i class="fa-solid fa-filter table__filter-icon"></i>
+            </th>
+            <th>Header 3</th>
+            <th>Header 4</th>
+          </tr>
+        </thead>
+        <tbody class="table__body">
+          <tr class="table__body-row">
+            <td class="table__checked">
+              <input type="checkbox" class="select-row" />
+            </td>
+            <td>Thế Anh 1</td>
+            <td>theanh090602@gmail.com</td>
+            <td>0912381923</td>
+            <td>Cầu Giấy, Hà Nội</td>
+
+            <div class="table__row-function">
+              <i class="fa-solid fa-pen-circle"></i>
+              <i class="fa-solid fa-circle-ellipsis"></i>
+            </div>
+          </tr>
+
+          <tr class="table__body-row">
+            <td class="table__checked">
+              <input type="checkbox" class="select-row" />
+            </td>
+            <td>Thế Anh 2</td>
+            <td>theanh@gmail.com</td>
+            <td>0954321423</td>
+            <td>Cầu Giấy 2, Hà Nội</td>
+          </tr>
+        </tbody>
+
+        <tfoot class="table__footer">
+          <tr class="table__footer-row">
+            <td colspan="2" class="table__sum-records">Tổng: <span style="font-weight: bold; margin-left: 5px;">2</span></td>
+            <td colspan="1" class="table__count-records-per-page">Số bản ghi/trang: 10<span style="margin-left: 5px;"><i class="fa-solid fa-regular fa-angle-down"></i></span></td>
+            <td colspan="1" class="table__records">1 - 2 bản ghi <span style="margin-left: 5px;"><i class="fa-solid fa-regular fa-angle-left"></i> <i class="fa-solid fa-regular fa-angle-right"></i></span></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <br />
+    Combobox
+    <div class="combobox-group">
+      <div class="combobox-container">
+        <div class="combobox__label-container">
+          <label for="combobox__textfield__input">Tỉnh, thành phố <span class="input__required">*</span></label>
+        </div>
+        <div class="combobox__infor-container">
+          <div class="combobox__textfield__data-container">
+            <div class="combobox__textfield__data-container__input-container">
+              <input
+                id="combobox__textfield__input"
+                class="combobox__textfield__input-group"
+                placeholder="- Chọn giá trị -"
+              />
+            </div>
+          </div>
+          <div class="combobox__dropdown--container">
+            <i class="fa-solid fa-angle-down"></i>
+          </div>
+          <div class="combobox__data-search-container">
+            <!-- Thêm data tìm kiếm vào đây -->
+          </div>
+        </div>
+
+        <div class="combobox__popup-add-value">
+          <div class="form-container">
+            <div class="form__header">
+              <div class="form__header-title">Thêm giá trị</div>
+            </div>
+            <div class="form__content">
+              <div class="textfield-container form__input">
+                <div class="textfield__label-container">
+                  <label for="textfield__input">Thành phố <span class="input__required">*</span></label>
+                </div>
+                <div class="textfield__data-container">
+                  <div class="textfield__data-container__input-container">
+                    <input
+                      id="city-add"
+                      class="textfield__input-group"
+                      placeholder="Hà Nội"
+                    />
+                  </div>
+                </div>
+                <!-- <div class="textfield__error-container">Không được để trống</div> -->
+              </div>
+    
+              <div class="textfield-container form__input">
+                <div class="textfield__label-container">
+                  <label for="textfield__input">Quốc gia</label>
+                </div>
+                <div class="textfield__data-container">
+                  <div class="textfield__data-container__input-container">
+                    <input
+                      id="textfield__input"
+                      class="textfield__input-group"
+                      placeholder="Việt Nam"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form__footer">
+              <!--secondary button-->
+              <div class="secondary-btn-container popup-cancel-button">
+                <div class="secondary-btn__label">Hủy</div>
+              </div>
+              <!--main button-->
+              <div class="main-btn-container">
+                <div class="main-btn__infor-container">
+                  <div class="combo-btn__label">Thêm</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="combobox-multiselect-container">
+        <div class="combobox-multiselect__label-container">
+          <label for="combobox-multiselect__textfield__input">Multiselect <span class="input__required">*</span></label>
+        </div>
+        <div class="combobox-multiselect__infor-container">
+          <div class="combobox-multiselect__textfield__data-container">
+            <!-- Thêm data đã chọn vào đây -->
+            <div class="combobox-multiselect__textfield__data-container__input-container">
+              <input
+                id="combobox-multiselect__textfield__input"
+                class="combobox-multiselect__textfield__input-group"
+                placeholder="- Chọn giá trị -"
+              />
+            </div>
+          </div>
+          <div class="combobox-multiselect__dropdown--container">
+            <i class="fa-solid fa-angle-down"></i>
+          </div>
+          <div class="combobox-multiselect__data-search-container">
+            <!-- Thêm data tìm kiếm vào đây -->
+          </div>
+        </div>
+
+        <div class="combobox-multiselect__popup-add-value">
+          <div class="form-container">
+            <div class="form__header">
+              <div class="form__header-title">Thêm giá trị</div>
+            </div>
+            <div class="form__content">
+              <div class="textfield-container form__input">
+                <div class="textfield__label-container">
+                  <label for="textfield__input">Thành phố <span class="input__required">*</span></label>
+                </div>
+                <div class="textfield__data-container">
+                  <div class="textfield__data-container__input-container">
+                    <input
+                      id="city-add"
+                      class="textfield__input-group"
+                      placeholder="Hà Nội"
+                    />
+                  </div>
+                </div>
+                <!-- <div class="textfield__error-container">Không được để trống</div> -->
+              </div>
+    
+              <div class="textfield-container form__input">
+                <div class="textfield__label-container">
+                  <label for="textfield__input">Quốc gia</label>
+                </div>
+                <div class="textfield__data-container">
+                  <div class="textfield__data-container__input-container">
+                    <input
+                      id="textfield__input"
+                      class="textfield__input-group"
+                      placeholder="Việt Nam"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form__footer">
+              <!--secondary button-->
+              <div class="secondary-btn-container popup-cancel-button">
+                <div class="secondary-btn__label">Hủy</div>
+              </div>
+              <!--main button-->
+              <div class="main-btn-container">
+                <div class="main-btn__infor-container">
+                  <div class="combo-btn__label">Thêm</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/button.js"></script>
+    <script src="./js/textfield.js"></script>
+    <script src="./js/combobox.js"></script>
+    <script src="./js/combobox-multiselect.js"></script>
+  </body>
+</html>
