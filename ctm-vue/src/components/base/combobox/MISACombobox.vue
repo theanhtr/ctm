@@ -26,6 +26,7 @@
         @focus="focusInput = true"
         :tabindex="tabindex"
         :disabled="disableInput"
+        v-MISABlackenOut
       />
       <misa-icon
         @mouseenter="hoverDropdownIcon = true"
@@ -34,7 +35,7 @@
         :style="styleDropdownIcon"
         icon="dropdown--solid-black"
         scale="0.8"
-        height="96%"
+        height="99%"
       />
 
       <misa-tooltip v-if="errorText !== '' && hoverInput">{{

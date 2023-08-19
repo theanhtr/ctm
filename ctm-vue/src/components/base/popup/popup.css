@@ -3,6 +3,7 @@
   flex-direction: column;
   background-color: #fff;
   border-radius: var(--border-radius-default);
+  overflow: auto;
 }
 
 .m-popup__header {
@@ -41,6 +42,8 @@
   display: flex;
   flex-direction: column;
   row-gap: 16px;
+  flex: 1;
+  overflow: inherit;
 }
 
 .m-popup__description {

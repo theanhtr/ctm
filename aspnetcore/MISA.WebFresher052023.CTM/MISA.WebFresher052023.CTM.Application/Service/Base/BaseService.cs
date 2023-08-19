@@ -72,7 +72,7 @@ namespace MISA.WebFresher052023.CTM.Application
                 var propertyName = property?.Name;
                 var propertyValue = property?.GetValue(entityUpdateDto);
 
-                if ((propertyName != null) && (propertyValue != null))
+                if ((propertyName != null))
                 {
                     var propertyInfo = entityUpdate.GetType().GetProperty(propertyName);
 
@@ -121,7 +121,7 @@ namespace MISA.WebFresher052023.CTM.Application
         {
             if (ids.Count() == 0)
             {
-                throw new ValidateException(StatusErrorCode.DeleteEmptyError, ResourceVN.Delete_Empty_Error, null);
+                throw new ValidateException(StatusErrorCode.DeleteEmptyError, Resource.Delete_Empty_Error, null);
             }
 
             var entities = await _baseRepository.GetListByIdsAsync(ids);

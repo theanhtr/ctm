@@ -3,7 +3,7 @@
     <div class="header__step-2">
       <div class="header__step-2__left">
         <div class="step-2__title label-text">
-          Ghép cột trên phần mềm với cột trên tệp dữ liệu
+          {{ $t("importExcel.headerMerge.header.title") }}
         </div>
       </div>
       <div class="header__step-2__right"></div>
@@ -33,7 +33,7 @@
 <script>
 import { headersInfo } from "./employeeHeadersInfo.js";
 import { headerMergeColumnsInfo } from "./headerMergeColumnsInfo.js";
-import { findIndexByAttribute } from "@/helper/common.js";
+import { findIndexByAttributeInclude } from "@/helper/common.js";
 import EmployeeService from "@/service/EmployeeService.js";
 
 export default {
@@ -43,6 +43,7 @@ export default {
       required: true,
     },
   },
+
   data() {
     return {
       searchText: "",
@@ -55,49 +56,24 @@ export default {
     };
   },
 
+  created() {
+    this.employeeHeadersInfo.forEach((e) => {
+      let indexFind = findIndexByAttributeInclude(
+        this.headersInfoComboboxData,
+        "name",
+        e.showName
+      );
+
+      if (indexFind !== -1) {
+        e.excelColumnIndex =
+          this.headersInfoComboboxData[indexFind]["HeaderColumnIndex"];
+      } else {
+        e.excelColumnIndex = 0;
+      }
+    });
+  },
+
   methods: {
-    /**
-     * xử lý khi chọn checkbox ở 1 row
-     * @author: TTANH (23/07/2023)
-     * @param {string} rowId: id của record được chọn
-     */
-    checkedRow(rowId) {
-      try {
-        var index = findIndexByAttribute(this.employeeHeadersInfo, "id", rowId);
-
-        if (index != -1) {
-          this.employeeHeadersInfo[index].isRequired = true;
-          this.employeeHeadersInfo[index].isSelected = true;
-        }
-      } catch (error) {
-        console.log(
-          "🚀 ~ file: EmployeeImportHeaderMerge.vue:59 ~ checkedRow ~ error:",
-          error
-        );
-      }
-    },
-
-    /**
-     * xử lý khi bỏ chọn checkbox ở 1 row
-     * @author: TTANH (23/07/2023)
-     * @param {string} rowId: id của record được chọn
-     */
-    uncheckedRow(rowId) {
-      try {
-        var index = findIndexByAttribute(this.employeeHeadersInfo, "id", rowId);
-
-        if (index != -1) {
-          this.employeeHeadersInfo[index].isRequired = false;
-          this.employeeHeadersInfo[index].isSelected = false;
-        }
-      } catch (error) {
-        console.log(
-          "🚀 ~ file: EmployeeImportHeaderMerge.vue:80 ~ uncheckedRow ~ error:",
-          error
-        );
-      }
-    },
-
     /**
      * Hàm validate các trường bắt buộc phải ánh xạ
      * @author: TTANH (24/07/2023)
@@ -109,10 +85,9 @@ export default {
           (employeeHeaderInfo.excelColumnIndex <= 0 ||
             employeeHeaderInfo.excelColumnIndex == "")
         ) {
-          this.errorText =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].ImportHeaderMergeNoti.HeaderRequiredNotMap;
+          this.errorText = this.$t(
+            "errorHandle.importExcel.headerMerge.headerRequiredNotMap"
+          );
 
           this.isShowDialogError = true;
 
@@ -157,21 +132,12 @@ export default {
           if (res.success) {
           } else {
             if (
-              res.errorCode === this.$_MISAEnum.ERROR_CODE.WRONG_FORMAT_DATE
-            ) {
-              this.$store.commit("addToast", {
-                type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ClientError.WrongFormatDate,
-              });
-            } else if (
-              res.errorCode ===
+              res.errorCode === this.$_MISAEnum.ERROR_CODE.WRONG_FORMAT_DATE ||
               this.$_MISAEnum.ERROR_CODE.EXCEL_HEADER_REQUIRED_NOT_MAP
             ) {
               this.$store.commit("addToast", {
                 type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ImportHeaderMergeNoti.HeaderRequiredNotMap,
+                text: res.userMsg,
               });
             }
           }

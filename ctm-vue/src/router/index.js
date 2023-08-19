@@ -6,6 +6,7 @@ import EmployeeList from "../views/employee/employee-list/EmployeeList.vue";
 
 import ImportLayout from "../components/layout/import-layout/ImportLayout.vue";
 import EmployeeImport from "../views/employee/employee-import/EmployeeImport.vue";
+import MISAPageNotFound from "../components/layout/MISAPageNotFound.vue";
 
 const routes = [
   {
@@ -40,6 +41,11 @@ const routes = [
         component: EmployeeImport,
       },
     ],
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: MISAPageNotFound,
   },
 ];
 

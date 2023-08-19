@@ -62,6 +62,9 @@
         :key="data.id"
         @click="clickDataDropdownItem($event, data.id)"
         class="data__item"
+        :class="
+          dataDropdownSelectedValue === data.value ? 'data__item--selected' : ''
+        "
       >
         {{ data.title }}
       </div>
@@ -145,6 +148,12 @@ export default {
     dataDropdownTop: {
       default: false,
     },
+
+    /* biến sử dụng cho việc hiện màu đã chọn của data_dropdown */
+    dataDropdownSelectedValue: {
+      default: "",
+    },
+
     tabindex: {
       default: "0",
     },

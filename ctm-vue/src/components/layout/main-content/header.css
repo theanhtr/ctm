@@ -46,6 +46,22 @@
   column-gap: 30px;
 }
 
+.change-language {
+  column-gap: 3px;
+}
+
+.change-language__item--active {
+  outline: var(--primary-btn--active-background-color) solid 3px;
+}
+
+.change-language__item:hover {
+  outline: var(--primary-btn--hover-background-color) solid 3px;
+}
+
+.change-language__item:active {
+  outline: var(--border-color-default) solid 3px;
+}
+
 .header__action-right {
   display: flex;
   align-items: center;

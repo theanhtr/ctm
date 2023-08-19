@@ -32,7 +32,7 @@ namespace MISA.WebFresher052023.CTM.Domain.Tests
         {
             //Arrange
             var code = "NV-1001A";
-            var expectedMessage = string.Format(ResourceVN.Wrong_Format_Code, code);
+            var expectedMessage = string.Format(Resource.Wrong_Format_Code, code);
 
             // Act & Assert
             var exception = Assert.ThrowsAsync<ValidateException>(async () => await _employeeValidate.CodeValidate(code));
@@ -49,7 +49,7 @@ namespace MISA.WebFresher052023.CTM.Domain.Tests
         {
             //Arrange
             var code = "NV-1001";
-            var expectedMessage = string.Format(ResourceVN.Code_Exist, code);
+            var expectedMessage = string.Format(Resource.Code_Exist, code);
 
             var employee = new Employee();
 

@@ -171,7 +171,7 @@ namespace MISA.WebFresher052023.CTM.Application
         /// <summary>
         /// Email của nhân viên
         /// </summary>
-        [EmailAddress(ErrorMessageResourceType = typeof(ResourceVN), ErrorMessageResourceName = "Wrong_Format_Email")]
+        [EmailAddress(ErrorMessageResourceType = typeof(Resource), ErrorMessageResourceName = "Wrong_Format_Email")]
         [StringLength(100)]
         public string? ContactEmail { get; set; }
         #endregion

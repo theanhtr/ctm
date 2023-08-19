@@ -34,6 +34,10 @@ export default {
     },
   },
   methods: {
+    /**
+     * lấy vùng chứa của icon
+     * @author: TTANH (31/07/2023)
+     */
     getIconContainerRef() {
       return this.$refs.iconContainer;
     },

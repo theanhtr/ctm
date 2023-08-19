@@ -31,26 +31,7 @@ export default {
   },
   computed: {
     defaultTitle() {
-      switch (this.type) {
-        case "info":
-          return this.$_MISAResource[this.$store.state.langCode].ToastTitle
-            .Info;
-
-        case "warning":
-          return this.$_MISAResource[this.$store.state.langCode].ToastTitle
-            .Warning;
-
-        case "error":
-          return this.$_MISAResource[this.$store.state.langCode].ToastTitle
-            .Error;
-
-        case "success":
-          return this.$_MISAResource[this.$store.state.langCode].ToastTitle
-            .Success;
-
-        default:
-          break;
-      }
+      return this.$t(`component.toast.defaultTitle.${this.type}`);
     },
   },
 };

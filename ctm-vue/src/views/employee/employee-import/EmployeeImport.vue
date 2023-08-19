@@ -10,7 +10,7 @@
         "
       >
         <div class="step__index">1</div>
-        <div class="step__name">CHỌN TỆP NGUỒN</div>
+        <div class="step__name">{{ $t("importLayout.step1Name") }}</div>
       </div>
       <div
         class="header__line"
@@ -29,7 +29,7 @@
         "
       >
         <div class="step__index">2</div>
-        <div class="step__name">GHÉP DỮ LIỆU</div>
+        <div class="step__name">{{ $t("importLayout.step2Name") }}</div>
       </div>
       <div
         class="header__line"
@@ -48,7 +48,7 @@
         "
       >
         <div class="step__index">3</div>
-        <div class="step__name">KIỂM TRA DỮ LIỆU</div>
+        <div class="step__name">{{ $t("importLayout.step3Name") }}</div>
       </div>
       <div
         class="header__line"
@@ -67,7 +67,7 @@
         "
       >
         <div class="step__index">4</div>
-        <div class="step__name">KẾT QUẢ</div>
+        <div class="step__name">{{ $t("importLayout.step4Name") }}</div>
       </div>
     </div>
     <div class="employee-import__content">
@@ -106,7 +106,8 @@
           borderRadius="var(--border-radius-default)"
           padding="0px 12px"
           @clickBtnContainer="$router.go(-1)"
-          >Hủy</misa-button
+          tabindex="99"
+          >{{ $t("common.button.cancel") }}</misa-button
         >
         <misa-button
           type="main"
@@ -114,7 +115,8 @@
           borderRadius="var(--border-radius-default)"
           padding="0px 22px"
           @clickBtnContainer="stepOneNext"
-          >Tiếp tục</misa-button
+          tabindex="100"
+          >{{ $t("common.button.continue") }}</misa-button
         >
       </div>
       <div
@@ -128,7 +130,8 @@
           borderRadius="var(--border-radius-default)"
           padding="0px 22px"
           @clickBtnContainer="currentStep--"
-          >Quay lại</misa-button
+          tabindex="99"
+          >{{ $t("common.button.rollBack") }}</misa-button
         >
         <misa-button
           type="main"
@@ -136,7 +139,8 @@
           borderRadius="var(--border-radius-default)"
           padding="0px 22px"
           @clickBtnContainer="stepTwoNext"
-          >Tiếp tục</misa-button
+          tabindex="100"
+          >{{ $t("common.button.continue") }}</misa-button
         >
       </div>
       <div
@@ -155,7 +159,8 @@
             borderRadius="var(--border-radius-default)"
             padding="0px 22px"
             @clickBtnContainer="currentStep--"
-            >Quay lại</misa-button
+            tabindex="99"
+            >{{ $t("common.button.rollBack") }}</misa-button
           >
           <misa-button
             type="main"
@@ -163,7 +168,8 @@
             borderRadius="var(--border-radius-default)"
             padding="0px 20px"
             @clickBtnContainer="stepThreeNext"
-            >Nhập dữ liệu</misa-button
+            tabindex="100"
+            >{{ $t("common.button.dataInsert") }}</misa-button
           >
         </div>
         <div class="flex-row" style="width: 100%; justify-content: end" v-else>
@@ -173,7 +179,8 @@
             borderRadius="var(--border-radius-default)"
             padding="0px 18px"
             @clickBtnContainer="$router.go(-1)"
-            >Đóng</misa-button
+            tabindex="99"
+            >{{ $t("common.button.close") }}</misa-button
           >
         </div>
       </div>
@@ -188,7 +195,8 @@
           borderRadius="var(--border-radius-default)"
           padding="0px 18px"
           @clickBtnContainer="$router.go(-1)"
-          >Đóng</misa-button
+          tabindex="99"
+          >{{ $t("common.button.close") }}</misa-button
         >
       </div>
     </div>
@@ -241,12 +249,11 @@ export default {
      * Hàm xử lỗi chung
      * @author: TTANH (24/07/2023)
      */
-    handleErrorCodeApi(errorCode) {
+    handleErrorCodeApi(errorCode, userMsg) {
       if (errorCode === this.$_MISAEnum.ERROR_CODE.SESSION_IS_OVER) {
         this.$store.commit("addToast", {
           type: "error",
-          text: this.$_MISAResource[this.$store.state.langCode].ImportExcel
-            .SessionIsOver,
+          text: userMsg,
         });
       }
     },
@@ -262,7 +269,7 @@ export default {
         this.currentStep++;
         this.headersInfo = res.data;
       } else {
-        this.handleErrorCodeApi(res.errorCode);
+        this.handleErrorCodeApi(res.errorCode, res.userMsg);
       }
     },
 
@@ -281,7 +288,7 @@ export default {
           this.currentStep++;
         }
       } else {
-        this.handleErrorCodeApi(res.errorCode);
+        this.handleErrorCodeApi(res.errorCode, res.userMsg);
       }
     },
 
@@ -297,7 +304,7 @@ export default {
         this.recordSuccess = res.data;
         this.recordFail = this.dataCheckInfo.countRecord - this.recordSuccess;
       } else {
-        this.handleErrorCodeApi(res.errorCode);
+        this.handleErrorCodeApi(res.errorCode, res.userMsg);
       }
     },
   },

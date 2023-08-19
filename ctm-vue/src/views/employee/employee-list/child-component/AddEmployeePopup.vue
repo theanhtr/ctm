@@ -1,25 +1,32 @@
 <template>
   <div class="m-overlay" id="add-employee-popup">
-    <misa-popup title="Thông tin nhân viên">
+    <misa-popup
+      style="overflow: visible"
+      :title="$t('employeeSubsystem.addEmployeePopup.headerTitle')"
+    >
       <template #title__action>
         <div class="add-employee__title-action">
           <div class="title-action__info" @click="clickIsCustomer">
             <misa-checkbox-input :isCheck="isCustomer" />
-            <div class="title-action__title">Là khách hàng</div>
+            <div class="title-action__title">
+              {{ $t("employeeSubsystem.addEmployeePopup.isCustomer") }}
+            </div>
           </div>
           <div class="title-action__info" @click="clickIsSupplier">
             <misa-checkbox-input :isCheck="isSupplier" />
-            <div class="title-action__title">Là nhà cung cấp</div>
+            <div class="title-action__title">
+              {{ $t("employeeSubsystem.addEmployeePopup.isSupplier") }}
+            </div>
           </div>
         </div>
       </template>
       <template #header__close>
-        <misa-icon icon="help" title="Giúp (F1)" />
+        <misa-icon icon="help" :title="$t('common.helpIconTooltip')" />
         <misa-icon
-          @click="isShowOutConfirmPopup = true"
+          @click="closeAddForm"
           icon="close"
           style="margin-left: 3px"
-          title="Đóng (ESC)"
+          :title="$t('common.closeIconTooltip')"
         />
       </template>
       <template #content__input-control>
@@ -31,7 +38,14 @@
                 v-model="addEmployeeData.employeeCode"
                 type="code"
                 idInput="add__employee-code"
-                labelText="Mã"
+                :labelText="
+                  $t('employeeSubsystem.addEmployeePopup.labelInput.code')
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.code'
+                  )
+                "
                 :inputRequired="true"
                 style="padding-right: 6px"
                 class="w2/5"
@@ -43,7 +57,14 @@
                 v-model="addEmployeeData.fullName"
                 type="text"
                 idInput="add__full-name"
-                labelText="Tên"
+                :labelText="
+                  $t('employeeSubsystem.addEmployeePopup.labelInput.name')
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.name'
+                  )
+                "
                 :inputRequired="true"
                 class="w3/5"
                 ref="fullName"
@@ -56,7 +77,14 @@
                 v-model="addEmployeeData.departmentId"
                 ref="departmentId"
                 type="table"
-                labelText="Đơn vị"
+                :labelText="
+                  $t('employeeSubsystem.addEmployeePopup.labelInput.department')
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.department'
+                  )
+                "
                 :inputRequired="true"
                 :columnsInfo="departmentColumnsInfo"
                 :rowsData="computedDepartments"
@@ -71,7 +99,14 @@
                 v-model="addEmployeeData.position"
                 type="text"
                 idInput="add__position-code"
-                labelText="Chức danh"
+                :labelText="
+                  $t('employeeSubsystem.addEmployeePopup.labelInput.position')
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.position'
+                  )
+                "
                 class="w1"
                 tabindex="4"
                 ref="position"
@@ -83,7 +118,16 @@
                 v-model="addEmployeeData.supplierCustomerGroup"
                 type="text"
                 idInput="add__error"
-                labelText="Nhóm khách hàng, nhà cung cấp"
+                :labelText="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInput.supplierCustomerGroup'
+                  )
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.supplierCustomerGroup'
+                  )
+                "
                 class="w1"
                 tabindex="5"
                 ref="supplierCustomerGroup"
@@ -98,7 +142,16 @@
                 class="w2/5"
                 style="padding-right: 6px"
                 idInput="add__dob"
-                labelText="Ngày sinh"
+                :labelText="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInput.dateOfBirth'
+                  )
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.dateOfBirth'
+                  )
+                "
                 tabindex="6"
                 ref="dateOfBirth"
               />
@@ -109,7 +162,14 @@
                 nameRadioGroup="add__gender"
                 :align="'row'"
                 type="text"
-                labelText="Giới tính"
+                :labelText="
+                  $t('employeeSubsystem.addEmployeePopup.labelInput.gender')
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.gender'
+                  )
+                "
                 class="w3/5"
                 style="padding-left: 10px"
                 tabindex="7"
@@ -122,7 +182,16 @@
                 v-model="addEmployeeData.identityNumber"
                 type="text"
                 idInput="add__indentity-number"
-                labelText="Số CMND"
+                :labelText="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInput.identityNumber'
+                  )
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.identityNumber'
+                  )
+                "
                 class="w3/5"
                 style="padding-right: 6px"
                 tabindex="8"
@@ -134,7 +203,16 @@
                 class="w2/5"
                 style="padding-right: 6px"
                 idInput="add__indentity-date"
-                labelText="Ngày cấp"
+                :labelText="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInput.identityDate'
+                  )
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.identityDate'
+                  )
+                "
                 tabindex="9"
                 ref="identityDate"
               />
@@ -145,7 +223,16 @@
                 v-model="addEmployeeData.identityPlace"
                 type="text"
                 idInput="add__identity-place"
-                labelText="Nơi cấp"
+                :labelText="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInput.identityPlace'
+                  )
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.identityPlace'
+                  )
+                "
                 class="w1"
                 tabindex="10"
                 ref="identityPlace"
@@ -158,7 +245,16 @@
                 v-show="isCustomer"
                 type="text"
                 idInput="add__employee-code"
-                labelText="TK công nợ phải thu"
+                :labelText="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInput.receiveAccount'
+                  )
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.receiveAccount'
+                  )
+                "
                 style="padding-right: 8px"
                 class="w1/2"
                 tabindex="11"
@@ -170,7 +266,14 @@
                 v-show="isSupplier"
                 type="text"
                 idInput="add__employee-code"
-                labelText="TK công nợ phải trả"
+                :labelText="
+                  $t('employeeSubsystem.addEmployeePopup.labelInput.payAccount')
+                "
+                :labelTooltip="
+                  $t(
+                    'employeeSubsystem.addEmployeePopup.labelInputTooltip.payAccount'
+                  )
+                "
                 class="w1/2"
                 tabindex="12"
                 ref="payAccount"
@@ -192,7 +295,10 @@
               @click="
                 currentMoreInfo = this.$_MISAEnum.MORE_INFO_NAV.SALARY_INFO
               "
-              >Thông tin tiền lương</misa-button
+              tooltip="CTRL + 1"
+              >{{
+                $t("employeeSubsystem.addEmployeePopup.moreInfoNav.salaryInfo")
+              }}</misa-button
             >
             <misa-button
               type="sub"
@@ -204,7 +310,10 @@
                   : ''
               "
               @click="currentMoreInfo = this.$_MISAEnum.MORE_INFO_NAV.BANK_INFO"
-              >Thông tin ngân hàng</misa-button
+              tooltip="CTRL + 2"
+              >{{
+                $t("employeeSubsystem.addEmployeePopup.moreInfoNav.bankInfo")
+              }}</misa-button
             >
             <misa-button
               type="sub"
@@ -217,7 +326,10 @@
               @click="
                 currentMoreInfo = this.$_MISAEnum.MORE_INFO_NAV.CONTACT_INFO
               "
-              >Thông tin liên hệ</misa-button
+              tooltip="CTRL + 3"
+              >{{
+                $t("employeeSubsystem.addEmployeePopup.moreInfoNav.contactInfo")
+              }}</misa-button
             >
           </div>
           <div class="more-info__content">
@@ -233,7 +345,14 @@
                   v-model="addEmployeeData.salary"
                   type="money"
                   idInput="add__salary"
-                  labelText="Lương thỏa thuận"
+                  :labelText="
+                    $t('employeeSubsystem.addEmployeePopup.labelInput.salary')
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.salary'
+                    )
+                  "
                   class="w1/4 p-r-12"
                   tabindex="13"
                   ref="salary"
@@ -243,7 +362,16 @@
                   v-model="addEmployeeData.salaryCoefficients"
                   type="money"
                   idInput="add__salary-coefficients"
-                  labelText="Hệ số lương"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.salaryCoefficients'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.salaryCoefficients'
+                    )
+                  "
                   class="w1/6 p-r-12"
                   tabindex="14"
                   ref="salaryCoefficients"
@@ -253,7 +381,16 @@
                   v-model="addEmployeeData.salaryPaidForInsurance"
                   type="money"
                   idInput="add__salary-paid-for-insurance"
-                  labelText="Lương đóng bảo hiểm"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.salaryPaidForInsurance'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.salaryPaidForInsurance'
+                    )
+                  "
                   class="w1/3 p-r-12"
                   tabindex="15"
                   ref="salaryPaidForInsurance"
@@ -266,7 +403,16 @@
                   v-model="addEmployeeData.personalTaxCode"
                   type="text"
                   idInput="add__personal-tax-code"
-                  labelText="Mã số thuế"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.personalTaxCode'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.personalTaxCode'
+                    )
+                  "
                   class="w1/4 p-r-12"
                   tabindex="16"
                   ref="personalTaxCode"
@@ -276,7 +422,16 @@
                   v-model="addEmployeeData.typeOfContract"
                   type="text"
                   idInput="add__type-of-contract"
-                  labelText="Loại hợp đồng"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.typeOfContract'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.typeOfContract'
+                    )
+                  "
                   class="w1/2 p-r-12"
                   tabindex="17"
                   ref="typeOfContract"
@@ -286,7 +441,16 @@
                   v-model="addEmployeeData.numberOfDependents"
                   type="number_no_dot"
                   idInput="add__number-of-dependents"
-                  labelText="Số người phụ thuộc"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.numberOfDependents'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.numberOfDependents'
+                    )
+                  "
                   :haveButtonFunction="true"
                   class="w1/6 p-r-12"
                   tabindex="18"
@@ -306,7 +470,16 @@
                   v-model="addEmployeeData.accountNumber"
                   type="text"
                   idInput="add__account-number"
-                  labelText="Số tài khoản"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.accountNumber'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.accountNumber'
+                    )
+                  "
                   class="w1/6 p-r-12"
                   tabindex="13"
                   ref="accountNumber"
@@ -316,7 +489,14 @@
                   v-model="addEmployeeData.bankName"
                   type="text"
                   idInput="add__bank-name"
-                  labelText="Tên ngân hàng"
+                  :labelText="
+                    $t('employeeSubsystem.addEmployeePopup.labelInput.bankName')
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.bankName'
+                    )
+                  "
                   class="w1/4 p-r-12"
                   tabindex="14"
                   ref="bankName"
@@ -326,7 +506,16 @@
                   v-model="addEmployeeData.bankBranch"
                   type="text"
                   idInput="add__bank-branch"
-                  labelText="Chi nhánh"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.bankBranch'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.bankBranch'
+                    )
+                  "
                   class="w1/5 p-r-12"
                   tabindex="15"
                   ref="bankBranch"
@@ -336,7 +525,14 @@
                   v-model="addEmployeeData.bankProvince"
                   type="text"
                   idInput="add__bank-province"
-                  labelText="Tỉnh/TP của ngân hàng"
+                  :labelText="
+                    $t('employeeSubsystem.addEmployeePopup.labelInput.bankCity')
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.bankCity'
+                    )
+                  "
                   class="w1/3 p-r-12"
                   tabindex="16"
                   ref="bankProvince"
@@ -355,7 +551,16 @@
                   v-model="addEmployeeData.contactAddress"
                   type="text"
                   idInput="add__address"
-                  labelText="Địa chỉ"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.contactAddress'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.contactAddress'
+                    )
+                  "
                   class="w1"
                   tabindex="13"
                   ref="contactAddress"
@@ -367,7 +572,16 @@
                   v-model="addEmployeeData.contactPhoneNumber"
                   type="text"
                   idInput="add__phone-number"
-                  labelText="ĐT di động"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.contactPhoneNumber'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.contactPhoneNumber'
+                    )
+                  "
                   class="w1/4 p-r-12"
                   tabindex="14"
                   ref="contactPhoneNumber"
@@ -377,7 +591,16 @@
                   v-model="addEmployeeData.contactLandlinePhoneNumber"
                   type="text"
                   idInput="add__landline-phone-number"
-                  labelText="ĐT cố định"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.contactLandlinePhoneNumber'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.contactLandlinePhoneNumber'
+                    )
+                  "
                   class="w1/4 p-r-12"
                   tabindex="15"
                   ref="contactLandlinePhoneNumber"
@@ -387,7 +610,16 @@
                   v-model="addEmployeeData.contactEmail"
                   type="text"
                   idInput="add__email"
-                  labelText="Email"
+                  :labelText="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInput.contactEmail'
+                    )
+                  "
+                  :labelTooltip="
+                    $t(
+                      'employeeSubsystem.addEmployeePopup.labelInputTooltip.contactEmail'
+                    )
+                  "
                   class="w1/4 p-r-12"
                   tabindex="16"
                   ref="contactEmail"
@@ -412,7 +644,7 @@
               tabindex="20"
               borderRadius="var(--border-radius-default)"
               @clickBtnContainer="$emit('clickCancelBtn')"
-              >Hủy</misa-button
+              >{{ $t("common.button.cancel") }}</misa-button
             >
           </div>
           <div>
@@ -424,8 +656,8 @@
               style="margin-right: 10px"
               @clickBtnContainer="storeBtnClick"
               ref="storeBtn"
-              tooltip="Cất (Ctrl + S)"
-              >Cất</misa-button
+              :tooltip="$t('common.buttonTooltip.store')"
+              >{{ $t("common.button.store") }}</misa-button
             >
             <misa-button
               type="main"
@@ -435,8 +667,8 @@
               @clickBtnContainer="storeAndAddBtnClick"
               @keydown="onStoreAndAddBtnKeyDown"
               ref="storeAndAddBtn"
-              tooltip="Cất và thêm (Ctrl + Shift + S)"
-              >Cất và Thêm</misa-button
+              :tooltip="$t('common.buttonTooltip.storeAndAdd')"
+              >{{ $t("common.button.storeAndAdd") }}</misa-button
             >
           </div>
         </div>
@@ -480,6 +712,8 @@ import {
   emptyValidate,
   regexValidate,
 } from "@/helper/validate.js";
+import { CommonErrorHandle } from "@/helper/error-handle";
+import { capitalizeFirstLetter } from "@/helper/format-helper";
 
 export default {
   name: "AddEmployeePopup",
@@ -526,15 +760,15 @@ export default {
       genderOptions: [
         {
           id: this.$_MISAEnum.GENDER.MALE,
-          name: "Nam",
+          name: this.$t("common.gender.male"),
         },
         {
           id: this.$_MISAEnum.GENDER.FEMALE,
-          name: "Nữ",
+          name: this.$t("common.gender.female"),
         },
         {
-          id: this.$_MISAEnum.GENDER.ORTHER,
-          name: "Khác",
+          id: this.$_MISAEnum.GENDER.OTHER,
+          name: this.$t("common.gender.other"),
         },
       ],
 
@@ -687,7 +921,9 @@ export default {
       departmentColumnsInfo: [
         {
           id: "DepartmentCode",
-          name: "Mã đơn vị",
+          name: this.$t(
+            "employeeSubsystem.addEmployeePopup.departmentColumnsInfo.code"
+          ),
           size: "50px",
           textAlign: "left",
           format: "text",
@@ -696,7 +932,9 @@ export default {
         },
         {
           id: "DepartmentName",
-          name: "Tên đơn vị",
+          name: this.$t(
+            "employeeSubsystem.addEmployeePopup.departmentColumnsInfo.name"
+          ),
           size: "150px",
           textAlign: "left",
           format: "text",
@@ -710,6 +948,43 @@ export default {
 
   methods: {
     /**
+     * thực hiện kiểm tra trước khi đóng form
+     * @author: TTANH (07/08/2023)
+     */
+    closeAddForm() {
+      if (this.formMode == this.$_MISAEnum.FORM_MODE.ADD) {
+        this.isShowOutConfirmPopup = true;
+      } else {
+        let difference = false;
+
+        for (let attr in this.addEmployeeData) {
+          let Attr = capitalizeFirstLetter(attr);
+
+          let newData = this.addEmployeeData[attr];
+          let oldData = this.dataUpdate[Attr];
+
+          if (
+            ((newData == "" || newData == null) &&
+              (oldData == "" || oldData == null)) ||
+            attr == "departmentCode" ||
+            attr == "departmentName"
+          ) {
+          } else {
+            if (oldData !== newData) {
+              difference = true;
+            }
+          }
+        }
+
+        if (difference) {
+          this.isShowOutConfirmPopup = true;
+        } else {
+          this.$emit("clickCancelBtn");
+        }
+      }
+    },
+
+    /**
      * thực hiện get dữ liệu phòng ban
      * @author: TTANH (30/06/2023)
      */
@@ -720,11 +995,7 @@ export default {
         if (res.success) {
           this.departments = res.data;
         } else {
-          this.$store.commit("addToast", {
-            type: "error",
-            text: this.$_MISAResource[this.$store.state.langCode]
-              .DepartmentError.Error,
-          });
+          CommonErrorHandle();
         }
       } catch (error) {
         console.log(
@@ -781,10 +1052,10 @@ export default {
           this.addEmployeeData.employeeCode = res.data;
         } else {
           this.isShowDialogError = true;
-          this.errorTextEmployeeData.employeeCode =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].CustomerCodeInvalidError.NewCodeError;
+
+          this.errorTextEmployeeData.employeeCode = this.$t(
+            "errorHandle.employeeSubsystem.addEmployeePopup.newCodeError"
+          );
         }
       } catch (error) {
         console.log(
@@ -833,6 +1104,7 @@ export default {
         let isSuccess = await this.createNewEmployee();
 
         if (isSuccess) {
+          this.formMode = this.$_MISAEnum.FORM_MODE.ADD;
           this.resetAddEmployeeData();
           this.$refs.employeeCode.focus();
           this.$emit("reloadData");
@@ -866,6 +1138,8 @@ export default {
             }
           } else if (this.addEmployeeData[key]) {
             dataSendApi[key] = this.addEmployeeData[key];
+          } else {
+            dataSendApi[key] = null;
           }
         }
 
@@ -875,20 +1149,23 @@ export default {
           if (res.success) {
             this.$store.commit("addToast", {
               type: "success",
-              text: this.$_MISAResource[this.$store.state.langCode].AddEmployee
-                .Success,
+              text: this.$t(
+                "successHandle.employeeSubsystem.addEmployeePopup.add"
+              ),
             });
           } else {
-            this.$store.commit("addToast", {
-              type: "error",
-              text: res.userMsg,
-            });
-
             if (
               res.errorCode === this.$_MISAEnum.ERROR_CODE.CODE_DUPLICATE ||
               res.errorCode === this.$_MISAEnum.ERROR_CODE.WRONG_FORMAT_CODE
             ) {
+              this.$store.commit("addToast", {
+                type: "error",
+                text: res.userMsg,
+              });
+
               this.$refs.employeeCode.focus();
+            } else {
+              CommonErrorHandle();
             }
 
             isSuccess = false;
@@ -902,20 +1179,23 @@ export default {
           if (res.success) {
             this.$store.commit("addToast", {
               type: "success",
-              text: this.$_MISAResource[this.$store.state.langCode]
-                .UpdateEmployee.Success,
+              text: this.$t(
+                "successHandle.employeeSubsystem.addEmployeePopup.update"
+              ),
             });
           } else {
-            this.$store.commit("addToast", {
-              type: "error",
-              text: res.devMsg,
-            });
-
             if (
               res.errorCode === this.$_MISAEnum.ERROR_CODE.CODE_DUPLICATE ||
               res.errorCode === this.$_MISAEnum.ERROR_CODE.WRONG_FORMAT_CODE
             ) {
+              this.$store.commit("addToast", {
+                type: "error",
+                text: res.userMsg,
+              });
+
               this.$refs.employeeCode.focus();
+            } else {
+              CommonErrorHandle();
             }
 
             isSuccess = false;
@@ -938,9 +1218,9 @@ export default {
      */
     commonValidate(feildCheck = "") {
       for (let property in this.validateEmployeeData) {
-        let nameField =
-          this.$_MISAResource[this.$store.state.langCode]
-            .AddEmployeeDataNameField[property];
+        let nameField = this.$t(
+          `employeeSubsystem.addEmployeePopup.nameField.${property}`
+        );
 
         let valuePropValidateEmployeeData = this.validateEmployeeData[property];
 
@@ -988,10 +1268,9 @@ export default {
                 today.setHours(0, 0, 0, 0);
 
                 if (checkDate > today) {
-                  this.errorTextEmployeeData[property] = this.$sprintf(
-                    this.$_MISAResource[this.$store.state.langCode].Validate
-                      .DateNotGreaterThanToday,
-                    nameField
+                  this.errorTextEmployeeData[property] = this.$t(
+                    "errorHandle.employeeSubsystem.addEmployeePopup.dateNotGreaterThanToday",
+                    { name: nameField }
                   );
                   isValidate = false;
                 } else {
@@ -1058,10 +1337,9 @@ export default {
             this.addEmployeeData.departmentId
           ) === -1
         ) {
-          this.errorTextEmployeeData.departmentId =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].DepartmentInvalidError.NotFound;
+          this.errorTextEmployeeData.departmentId = this.$t(
+            "errorHandle.employeeSubsystem.addEmployeePopup.departmentNotFound"
+          );
         }
       }
     },
@@ -1126,6 +1404,14 @@ export default {
           this.addEmployeeData[attr] = "";
         }
 
+        if (this.$refs.identityDate) {
+          this.$refs.identityDate.resetDatePicked();
+        }
+
+        if (this.$refs.dateOfBirth) {
+          this.$refs.dateOfBirth.resetDatePicked();
+        }
+
         if (this.$refs.departmentId) {
           this.$refs.departmentId.getInputRef().value = "";
         }
@@ -1174,7 +1460,7 @@ export default {
 
       if (!this.isShowDialogError && !this.isShowOutConfirmPopup) {
         if (event.keyCode === this.$_MISAEnum.KEY_CODE.ESC) {
-          this.isShowOutConfirmPopup = true;
+          this.closeAddForm();
         } else if (
           event.keyCode === this.$_MISAEnum.KEY_CODE.S &&
           event.shiftKey &&
@@ -1188,6 +1474,33 @@ export default {
         ) {
           event.preventDefault();
           this.storeBtnClick();
+        } else if (
+          event.keyCode === this.$_MISAEnum.KEY_CODE["1"] &&
+          event.ctrlKey
+        ) {
+          event.preventDefault();
+          this.currentMoreInfo = this.$_MISAEnum.MORE_INFO_NAV.SALARY_INFO;
+          this.$nextTick(() => {
+            this.$refs.salary.focus();
+          });
+        } else if (
+          event.keyCode === this.$_MISAEnum.KEY_CODE["2"] &&
+          event.ctrlKey
+        ) {
+          event.preventDefault();
+          this.currentMoreInfo = this.$_MISAEnum.MORE_INFO_NAV.BANK_INFO;
+          this.$nextTick(() => {
+            this.$refs.accountNumber.focus();
+          });
+        } else if (
+          event.keyCode === this.$_MISAEnum.KEY_CODE["3"] &&
+          event.ctrlKey
+        ) {
+          event.preventDefault();
+          this.currentMoreInfo = this.$_MISAEnum.MORE_INFO_NAV.CONTACT_INFO;
+          this.$nextTick(() => {
+            this.$refs.contactAddress.focus();
+          });
         }
       }
     },

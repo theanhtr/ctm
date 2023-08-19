@@ -45,21 +45,9 @@
   border-radius: 50%;
 }
 
-.ele__checkmark::before {
-  content: "";
-  border: 1px solid var(--primary-btn--hover-background-color);
-  height: 130%;
-  width: 130%;
-  background-color: transparent;
-  position: absolute;
-  border-radius: 50%;
-  top: -15%;
-  left: -14%;
-  visibility: hidden;
-}
-
-.ele__input:focus + .ele__checkmark:before {
-  visibility: unset;
+.ele__input:focus + .ele__checkmark,
+.ele__input:active + .ele__checkmark {
+  outline: #a4dfff solid 2px;
 }
 
 .radio-input__ele-container input:checked ~ .ele__checkmark {
@@ -77,8 +65,8 @@
 }
 
 .radio-input__ele-container .ele__checkmark:after {
-  top: 3.4px;
-  left: 3.4px;
+  top: 3.2px;
+  left: 3.2px;
   width: 10px;
   height: 10px;
   border-radius: 50%;

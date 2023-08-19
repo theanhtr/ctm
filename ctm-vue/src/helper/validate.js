@@ -1,5 +1,5 @@
-import { ValidateConfig } from "../config/config";
-import MISAResource from "../resource";
+import MISAResource from "../resource/resource";
+import store from "../store";
 import sprintf from "sprintf-js";
 
 /**
@@ -8,7 +8,6 @@ import sprintf from "sprintf-js";
  * @param {int} maxLength chiều dài tối đa
  * @param {int?} minLength chiều dài tối thiểu
  * @param {string} nameField tên trường
- * @param {string} language mã ngôn ngữ: VN, EN
  * @returns thông báo lỗi
  * @author: TTANH (29/07/2023)
  */
@@ -16,22 +15,21 @@ function lengthValidate(
   valueCheck,
   maxLength,
   minLength = 0,
-  nameField = "Trường",
-  language = "VN"
+  nameField = MISAResource[store.state.langCode].validate.nameFieldDefault
 ) {
   let valueLength = valueCheck.length;
 
   if (maxLength < 0 || minLength < 0) {
-    return MISAResource[language].Validate.ParamPassToFunctionError;
+    return MISAResource[store.state.langCode].validate.paramPassToFunctionError;
   } else if (valueLength > maxLength) {
     return sprintf.sprintf(
-      MISAResource[language].Validate.MaxLengthError,
+      MISAResource[store.state.langCode].validate.maxLengthError,
       nameField,
       maxLength
     );
   } else if (valueLength < minLength) {
     return sprintf.sprintf(
-      MISAResource[language].Validate.MinLengthError,
+      MISAResource[store.state.langCode].validate.minLengthError,
       nameField,
       minLength
     );
@@ -44,16 +42,18 @@ function lengthValidate(
  * hàm kiểm tra một chuỗi trống
  * @param {string} valueCheck đối tượng cần kiểm tra
  * @param {string} nameField tên trường
- * @param {string} language mã ngôn ngữ: VN, EN
  * @returns thông báo lỗi
  * @author: TTANH (29/07/2023)
  */
-function emptyValidate(valueCheck, nameField = "Trường", language = "VN") {
+function emptyValidate(
+  valueCheck,
+  nameField = MISAResource[store.state.langCode].validate.nameFieldDefault
+) {
   let valueLength = valueCheck.length;
 
   if (valueLength === 0) {
     return sprintf.sprintf(
-      MISAResource[language].Validate.EmptyError,
+      MISAResource[store.state.langCode].validate.emptyError,
       nameField
     );
   } else {
@@ -65,20 +65,18 @@ function emptyValidate(valueCheck, nameField = "Trường", language = "VN") {
  * hàm kiểm tra định dạng theo regex
  * @param {string} valueCheck đối tượng cần kiểm tra
  * @param {string} nameField tên trường
- * @param {string} language mã ngôn ngữ: VN, EN
  * @param {string} regex regex kiểm tra
  * @returns thông báo lỗi
  * @author: TTANH (29/07/2023)
  */
 function regexValidate(
   valueCheck,
-  nameField = "Trường",
-  regex,
-  language = "VN"
+  nameField = MISAResource[store.state.langCode].validate.nameFieldDefault,
+  regex
 ) {
   if (!String(valueCheck).toLowerCase().match(regex) && valueCheck !== "") {
     return sprintf.sprintf(
-      MISAResource[language].Validate.FormatError,
+      MISAResource[store.state.langCode].validate.formatError,
       nameField
     );
   } else {

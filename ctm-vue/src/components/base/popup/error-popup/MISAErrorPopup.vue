@@ -36,7 +36,7 @@
             @clickBtnContainer="$emit('close-click')"
             tabindex="1000"
             @keydown="onKeyDownCloselButton"
-            >Đóng</misa-button
+            >{{ $t("common.button.close") }}</misa-button
           >
         </div>
       </template>

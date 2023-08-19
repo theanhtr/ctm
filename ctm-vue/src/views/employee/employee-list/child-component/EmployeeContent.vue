@@ -11,7 +11,9 @@
           :disable="batchExecutionDisable"
           :tabindex="-1"
           @clickItem="clickItemBatchExecution"
-          >Thực hiện hàng loạt</misa-button
+          >{{
+            $t("employeeSubsystem.employeeContent.batchExecution")
+          }}</misa-button
         >
       </div>
       <div class="page__action-right">
@@ -22,14 +24,17 @@
           :class="{ animated: tableSearchFocus }"
           v-model="searchText"
           ref="searchTextTable"
-          tooltip="Ctrl + Shift + F"
+          :placeholder="
+            $t('employeeSubsystem.employeeContent.searchPlaceHolder')
+          "
+          :tooltip="$t('employeeSubsystem.employeeContent.searchInputTooltip')"
         />
         <misa-icon
           :icon="
             'page__reload--' +
             (pageButtonHover['page__reload'] ? 'black' : 'grey')
           "
-          tooltip="Lấy lại dữ liệu"
+          :tooltip="$t('employeeSubsystem.employeeContent.reloadTooltip')"
           @mouseenter="pageButtonHover['page__reload'] = true"
           @mouseleave="pageButtonHover['page__reload'] = false"
           @click="reloadDataWithSelectedRows"
@@ -39,7 +44,7 @@
             'page__excel--' +
             (pageButtonHover['page__excel'] ? 'black' : 'grey')
           "
-          tooltip="Xuất ra excel"
+          :tooltip="$t('employeeSubsystem.employeeContent.exportExcelTooltip')"
           @mouseenter="pageButtonHover['page__excel'] = true"
           @mouseleave="pageButtonHover['page__excel'] = false"
           @click="exportToExcelWithSearchText"
@@ -49,26 +54,21 @@
             'page__setting--' +
             (pageButtonHover['page__setting'] ? 'black' : 'grey')
           "
-          tooltip="Tùy chỉnh giao diện"
+          :tooltip="
+            $t('employeeSubsystem.employeeContent.layoutSettingTooltip')
+          "
           @mouseenter="pageButtonHover['page__setting'] = true"
           @mouseleave="pageButtonHover['page__setting'] = false"
+          @click="isShowLayoutSetting = true"
         />
-        <misa-button
-          type="dropdown"
-          width="100px"
-          :tabindex="-1"
-          :border="'2px solid black'"
-          :dataDropdown="utilitiesDataDropdown"
-          >Tiện ích</misa-button
-        >
         <misa-button
           type="combo"
           @clickBtnContainer="showAddEmployeePopup"
           :dataDropdown="addDataDropdown"
           :tabindex="-1"
-          tooltip="Thêm (Insert)"
+          :tooltip="$t('employeeSubsystem.employeeContent.insertTooltip')"
           @clickItem="handleDropdownInsertButton"
-          >Thêm</misa-button
+          >{{ $t("common.button.add") }}</misa-button
         >
       </div>
     </div>
@@ -106,123 +106,29 @@
       ref="addEmployeePopup"
     />
 
-    <div
-      v-if="isShowConfirmDeletePopup"
-      class="m-overlay"
-      id="confirm-delete-popup"
-    >
-      <misa-popup
-        :haveHeader="false"
-        width="444px"
-        height="auto"
-        style="padding: 16px 20px 10px"
-      >
-        <template #content__input-control>
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              column-gap: 26px;
-              padding-top: 8px;
-            "
-          >
-            <misa-icon height="auto" width="auto" icon="warning--large" />
-            <span
-              >Bạn có thực sự muốn xóa Nhân viên
-              {{ `<${employeeCodeDelete}>` }} không?</span
-            >
-          </div>
-        </template>
+    <EmployeeLayoutSetting
+      v-if="isShowLayoutSetting"
+      ref="employeeLayoutSetting"
+      :employeeColumnsInfoProp="employeeColumnsInfo"
+      @close-click="isShowLayoutSetting = false"
+      @set-default-click="SetDefaultLayout"
+      @store-click="UpdateLayout"
+    />
 
-        <template #footer>
-          <misa-separation-line
-            style="
-              border-color: var(--border-color-default);
-              margin: 16px 0px 10px;
-            "
-          />
-          <div
-            style="width: 100%; display: flex; justify-content: space-between"
-          >
-            <misa-button
-              type="sub"
-              width="72px"
-              borderRadius="var(--border-radius-default)"
-              padding="0px 12px"
-              @clickBtnContainer="noDeleteBtnClick"
-              >Không</misa-button
-            >
-            <misa-button
-              type="main"
-              width="50px"
-              borderRadius="var(--border-radius-default)"
-              padding="0px 16px"
-              @clickBtnContainer="yesDeleteBtnClick"
-              >Có</misa-button
-            >
-          </div>
-        </template>
-      </misa-popup>
-    </div>
-
-    <div
-      v-if="isShowConfirmDeleteMultiplePopup"
-      class="m-overlay"
-      id="confirm-delete-multiple-popup"
-    >
-      <misa-popup
-        :haveHeader="false"
-        width="444px"
-        height="auto"
-        style="padding: 16px 20px 10px"
-      >
-        <template #content__input-control>
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              column-gap: 26px;
-              padding-top: 8px;
-            "
-          >
-            <misa-icon height="auto" width="auto" icon="warning--large" />
-            <span
-              >Bạn có thực sự muốn xóa {{ selectedEmployees.length }} nhân viên
-              không?</span
-            >
-          </div>
-        </template>
-
-        <template #footer>
-          <misa-separation-line
-            style="
-              border-color: var(--border-color-default);
-              margin: 16px 0px 10px;
-            "
-          />
-          <div
-            style="width: 100%; display: flex; justify-content: space-between"
-          >
-            <misa-button
-              type="sub"
-              width="72px"
-              borderRadius="var(--border-radius-default)"
-              padding="0px 12px"
-              @clickBtnContainer="isShowConfirmDeleteMultiplePopup = false"
-              >Không</misa-button
-            >
-            <misa-button
-              type="main"
-              width="50px"
-              borderRadius="var(--border-radius-default)"
-              padding="0px 16px"
-              @clickBtnContainer="deleteMultipleEmployee"
-              >Có</misa-button
-            >
-          </div>
-        </template>
-      </misa-popup>
-    </div>
+    <misa-delete-popup
+      :titleText="computedDeletePopupText"
+      v-if="isShowConfirmDeletePopup || isShowConfirmDeleteMultiplePopup"
+      @no-click="
+        isShowConfirmDeletePopup
+          ? noDeleteBtnClick()
+          : noDeleteMultipleEmployee()
+      "
+      @yes-click="
+        isShowConfirmDeletePopup
+          ? yesDeleteBtnClick()
+          : yesDeleteMultipleEmployee()
+      "
+    />
 
     <misa-loading-spinner v-if="isLoading" size="large" />
   </div>
@@ -230,9 +136,12 @@
 
 <script>
 import EmployeeService from "@/service/EmployeeService.js";
+import EmployeeLayoutService from "@/service/EmployeeLayoutService.js";
+import EmployeeLayoutSetting from "./employee-layout-setting/EmployeeLayoutSetting.vue";
 import AddEmployeePopup from "./AddEmployeePopup.vue";
+import { CommonErrorHandle } from "@/helper/error-handle";
 import { findIndexByAttribute, sortArrayByAttribute } from "@/helper/common.js";
-import { columnsInfo } from "./employeeColumnsInfo.js";
+import { formatToNumber } from "@/helper/textfield-format-helper.js";
 import { debounce } from "@/helper/debounce.js";
 import { isProxy, toRaw } from "vue";
 
@@ -240,6 +149,7 @@ export default {
   name: "EmployeeContent",
   components: {
     AddEmployeePopup,
+    EmployeeLayoutSetting,
   },
   data() {
     return {
@@ -248,7 +158,10 @@ export default {
       /* lưu dữ id các nhân viên đã được chọn */
       selectedEmployees: [],
 
-      employeeColumnsInfo: [...columnsInfo],
+      employeeColumnsInfo: [],
+
+      /* thông tin cột thuần được gửi từ api đã sắp xếp */
+      employeeColumnsInfoRaw: [],
 
       isLoading: false,
       /* các biến để xác định trạng thái trên page_action */
@@ -263,15 +176,24 @@ export default {
       batchExecutionDisable: true,
 
       /* các hành động cho nút "Thực hiện hàng loạt" ở page action */
-      batchExecutionDataDropdown: [{ id: "delete", title: "Xóa" }],
-
-      /* các hành động cho nút "Tiện ích" ở page action */
-      utilitiesDataDropdown: [
-        { id: "sync", title: "Đồng bộ với AMIS hệ thống" },
+      batchExecutionDataDropdown: [
+        {
+          id: "delete",
+          title: this.$t(
+            "employeeSubsystem.employeeContent.batchExecutionData.delete"
+          ),
+        },
       ],
 
       /* các hành động cho combo btn "Thêm" ở page action */
-      addDataDropdown: [{ id: "excel", title: "Nhập từ Excel" }],
+      addDataDropdown: [
+        {
+          id: "excel",
+          title: this.$t(
+            "employeeSubsystem.employeeContent.addDataDropdown.importExcel"
+          ),
+        },
+      ],
 
       /*== các biến sử dụng cho add-employee-popup ==*/
       isShowAddEmployeePopup: false,
@@ -300,17 +222,26 @@ export default {
 
       //biến sử dụng cho việc thao tác giữ shift khi chọn
       previouslySelectedIndex: -1,
+
+      //biến dùng để phân biệt việc có update thông tin cột khi sử dụng watch không
+      isUpdateColumnsInfo: false,
+
+      //biến dùng cho việc tùy chỉnh giao diện
+      isShowLayoutSetting: false,
     };
   },
 
   created() {
-    //đưa những cột được ghim lên đầu
-    this.employeeColumnsInfo = sortArrayByAttribute(
-      this.employeeColumnsInfo,
-      "isPin"
-    );
+    // lấy dữ liệu phân trang được lưu trong local storage
+    this.pagingData.pageNumber =
+      formatToNumber(localStorage.getItem("pageNumber")) ?? 1;
+    this.pagingData.pageSize =
+      formatToNumber(localStorage.getItem("pageSize")) ?? 10;
 
     window.addEventListener("keydown", this.handleKeydown);
+
+    // lấy thông tin cột
+    this.getEmployeeColumnsInfo();
 
     //lấy dữ liệu nhân viên
     this.getEmployees();
@@ -331,6 +262,87 @@ export default {
 
   methods: {
     /**
+     * Sắp xếp theo ordernumber và isPin để hiển thị đúng
+     * @author: TTANH (04/08/2023)
+     */
+    sortEmployeeColumnsInfo(columnsInfoTemp) {
+      try {
+        // sắp xếp theo thứ tự
+        columnsInfoTemp = sortArrayByAttribute(
+          columnsInfoTemp,
+          "OrderNumber",
+          false
+        );
+
+        //đưa những cột được ghim lên đầu
+        columnsInfoTemp = sortArrayByAttribute(columnsInfoTemp, "ColumnIsPin");
+
+        return columnsInfoTemp;
+      } catch (error) {
+        console.log(
+          "🚀 ~ file: EmployeeContent.vue:263 ~ sortEmployeeColumnsInfo ~ error:",
+          error
+        );
+      }
+    },
+
+    /**
+     * Hàm lấy thông tin cột từ server
+     * @author: TTANH (03/08/2023)
+     */
+    async getEmployeeColumnsInfo() {
+      try {
+        const res = await EmployeeLayoutService.get();
+
+        if (res.success) {
+          let columnsInfoTemp = res.data;
+
+          columnsInfoTemp = this.sortEmployeeColumnsInfo(columnsInfoTemp);
+
+          this.employeeColumnsInfoRaw = columnsInfoTemp;
+        } else {
+          CommonErrorHandle();
+        }
+      } catch (error) {
+        console.log(
+          "🚀 ~ file: EmployeeContent.vue:241 ~ getEmployeeColumnsInfo ~ error:",
+          error
+        );
+      }
+    },
+
+    /**
+     * Thực hiện cập nhật layout
+     * @author: TTANH (04/08/2023)
+     */
+    async UpdateLayout() {
+      this.isShowLayoutSetting = false;
+
+      await this.updateColumnsInfoToDB(
+        this.$refs.employeeLayoutSetting.getEmployeeColumnsInfoUpdate()
+      );
+
+      this.reloadData();
+    },
+
+    /**
+     * Thực hiện lấy lại mẫu mặc định của layout
+     * @author: TTANH (04/08/2023)
+     */
+    async SetDefaultLayout() {
+      this.isShowLayoutSetting = false;
+
+      const res = await EmployeeLayoutService.setDefaultLayout();
+
+      if (res) {
+      } else {
+        CommonErrorHandle();
+      }
+
+      this.reloadData();
+    },
+
+    /**
      * hàm thực hiện mở thêm nhân viên
      * @author: TTANH (11/07/2023)
      */
@@ -348,7 +360,7 @@ export default {
         const res = await EmployeeService.filter({
           pageSize: this.pagingData.pageSize,
           pageNumber: this.pagingData.pageNumber,
-          searchText: this.searchText,
+          searchText: this.searchText.trim(),
         });
 
         if (res.success) {
@@ -356,16 +368,13 @@ export default {
             this.employees = res.data.Data;
             this.pagingData.totalPage = res.data.TotalPage;
             this.pagingData.totalRecord = res.data.TotalRecord;
+            this.pagingData.pageNumber = res.data.CurrentPage;
             this.noData = false;
           } else {
             this.noData = true;
           }
         } else {
-          this.$store.commit("addToast", {
-            type: "error",
-            text: this.$_MISAResource[this.$store.state.langCode].EmployeeError
-              .Get,
-          });
+          CommonErrorHandle();
         }
       } catch (error) {
         console.log(
@@ -389,10 +398,18 @@ export default {
     },
 
     /**
+     * bỏ lệnh xóa nhiều nhân viên
+     * @author: TTANH (31/07/2023)
+     */
+    noDeleteMultipleEmployee() {
+      this.isShowConfirmDeleteMultiplePopup = false;
+    },
+
+    /**
      * xóa nhiều nhân viên
      * @author: TTANH (17/07/2023)
      */
-    async deleteMultipleEmployee() {
+    async yesDeleteMultipleEmployee() {
       var dataSendApi = null;
 
       if (isProxy(this.selectedEmployees)) {
@@ -401,16 +418,18 @@ export default {
         dataSendApi = this.selectedEmployees;
       }
 
+      this.isLoading = true;
+
       const res = await EmployeeService.deleteMultiple(dataSendApi);
+
+      this.isLoading = false;
 
       if (res.success) {
         this.$store.commit("addToast", {
           type: "success",
-          text:
-            this.$_MISAResource[this.$store.state.langCode]
-              .DeleteMultipleEmployee.Success +
-            res.data +
-            " nhân viên.",
+          text: this.$t("successHandle.employeeSubsystem.deleteMultiple", {
+            count: res.data,
+          }),
         });
 
         this.selectedEmployees = [];
@@ -418,11 +437,7 @@ export default {
 
         this.reloadData();
       } else {
-        this.$store.commit("addToast", {
-          type: "error",
-          text: this.$_MISAResource[this.$store.state.langCode]
-            .DeleteMultipleEmployee.Error,
-        });
+        CommonErrorHandle();
       }
     },
 
@@ -432,6 +447,8 @@ export default {
      */
     reloadData() {
       try {
+        this.getEmployeeColumnsInfo();
+
         this.previouslySelectedIndex = -1;
         this.employees = [];
         this.getEmployees();
@@ -444,7 +461,7 @@ export default {
     },
 
     /**
-     * xóa thêm dữ liệu đã chọn
+     * bỏ hết dữ liệu đã chọn khi ấn vào nút "Lấy lại dữ liệu"
      * @author: TTANH (03/07/2023)
      */
     reloadDataWithSelectedRows() {
@@ -465,26 +482,21 @@ export default {
      */
     async exportToExcelWithSearchText() {
       try {
-        document.body.style.cursor = "wait";
+        this.isLoading = true;
 
         const res = await EmployeeService.getExcel({
           searchText: this.searchText,
         });
 
-        document.body.style.cursor = "unset";
+        this.isLoading = false;
 
         if (res.success) {
           this.$store.commit("addToast", {
             type: "success",
-            text: this.$_MISAResource[this.$store.state.langCode].ExportExcel
-              .Success,
+            text: this.$t("successHandle.employeeSubsystem.exportExcel"),
           });
         } else {
-          this.$store.commit("addToast", {
-            type: "error",
-            text: this.$_MISAResource[this.$store.state.langCode].ExportExcel
-              .Error,
-          });
+          CommonErrorHandle();
         }
       } catch (error) {
         console.log(
@@ -713,9 +725,10 @@ export default {
         } else {
           this.$store.commit("addToast", {
             type: "error",
-            text: this.$_MISAResource[this.$store.state.langCode].DeleteEmployee
-              .NotFound,
+            text: this.$t("errorHandle.employeeSubsystem.notFoundEmployee"),
           });
+
+          this.reloadData();
         }
       } catch (error) {
         console.log(
@@ -793,6 +806,7 @@ export default {
      */
     yesDeleteBtnClick() {
       try {
+        this.deleteSelectedRow(this.employeeIdDelete);
         this.deleteRecord();
         this.closeConfirmDeletePopup();
       } catch (error) {
@@ -816,13 +830,9 @@ export default {
         if (res.success) {
           this.$store.commit("addToast", {
             type: "success",
-            text:
-              this.$_MISAResource[this.$store.state.langCode].DeleteEmployee
-                .Success +
-              "<" +
-              employeeCode +
-              ">" +
-              ".",
+            text: this.$t("successHandle.employeeSubsystem.delete", {
+              code: employeeCode,
+            }),
           });
 
           this.reloadData();
@@ -830,15 +840,10 @@ export default {
           if (res.errorCode === this.$_MISAEnum.ERROR_CODE.NOT_FOUND_DATA) {
             this.$store.commit("addToast", {
               type: "error",
-              text: this.$_MISAResource[this.$store.state.langCode]
-                .DeleteEmployee.NotFound,
+              text: res.userMsg,
             });
           } else {
-            this.$store.commit("addToast", {
-              type: "error",
-              text: this.$_MISAResource[this.$store.state.langCode]
-                .DeleteEmployee.Error,
-            });
+            CommonErrorHandle();
           }
         }
 
@@ -857,8 +862,8 @@ export default {
      */
     resizeEmployeeColumn(index, resizeWidth) {
       try {
+        this.isUpdateColumnsInfo = true;
         this.employeeColumnsInfo[index].size = resizeWidth;
-        this.employeeColumnsInfo[index].size;
       } catch (error) {
         console.log(
           "🚀 ~ file: EmployeeContent.vue:524 ~ resizeEmployeeColumn ~ error:",
@@ -882,6 +887,113 @@ export default {
         event.ctrlKey
       ) {
         this.$refs.searchTextTable.focus();
+      }
+    },
+
+    /**
+     * chuyển đổi 1 cột thành dạng misa table có thể hiểu
+     * @author: TTANH (03/08/2023)
+     * @param {Object} rawData dữ liệu thông tin cột raw
+     * @returns 1 object đã được chuyển đổi
+     */
+    mapColumnInfoFromRawToCode(rawData) {
+      let langCode = this.$store.state.langCode;
+
+      let tempMap = {};
+
+      tempMap.id = rawData.ServerColumnName;
+      tempMap.name = rawData[`${langCode}ClientColumnName`];
+      tempMap.size = rawData.ColumnWidth;
+      tempMap.textAlign = rawData.ColumnTextAlign;
+      tempMap.format = rawData.ColumnFormat;
+      tempMap.isShow = rawData.ColumnIsShow;
+      tempMap.isPin = rawData.ColumnIsPin;
+      tempMap.tooltip = rawData[`${langCode}Tooltip`];
+      tempMap.clientColumnNameDefault =
+        rawData[`${langCode}ClientColumnNameDefault`];
+      tempMap.orderNumber = rawData.OrderNumber;
+
+      return tempMap;
+    },
+
+    /**
+     * chuyển đổi mảng cột thành dạng misa table có thể hiểu
+     * @author: TTANH (03/08/2023)
+     * @param {Array} rawsData dữ liệu thông tin cột raw
+     * @returns 1 mảng object đã được chuyển đổi
+     */
+    mapColumnsInfoFromRawToCode(rawsData) {
+      let tempMapArray = [];
+
+      rawsData.forEach((e) => {
+        let tempMap = this.mapColumnInfoFromRawToCode(e);
+
+        tempMapArray.push(tempMap);
+      });
+
+      return tempMapArray;
+    },
+
+    /**
+     * chuyển đổi dữ liệu cập nhật sang dữ liệu truyền cho api để cập nhật
+     * @author: TTANH (03/08/2023)
+     * @param {Object} codeData dữ liệu thông tin cột
+     * @returns 1 object đã được chuyển đổi
+     */
+    mapColumnInfoFromCodeToRawForUpdate(codeData) {
+      let langCode = this.$store.state.langCode;
+
+      let indexInRaw = findIndexByAttribute(
+        this.employeeColumnsInfoRaw,
+        "ServerColumnName",
+        codeData.id
+      );
+
+      let employeeColumnInfoRaw = this.employeeColumnsInfoRaw[indexInRaw];
+
+      let tempMap = {};
+
+      tempMap.EmployeeLayoutId = employeeColumnInfoRaw.EmployeeLayoutId;
+      tempMap.viClientColumnName = employeeColumnInfoRaw.viClientColumnName;
+      tempMap.enClientColumnName = employeeColumnInfoRaw.enClientColumnName;
+      tempMap.OrderNumber = employeeColumnInfoRaw.OrderNumber;
+
+      tempMap[`${langCode}ClientColumnName`] = codeData.name;
+      tempMap.ColumnWidth = codeData.size;
+      tempMap.ColumnIsShow = codeData.isShow;
+      tempMap.ColumnIsPin = codeData.isPin;
+      return tempMap;
+    },
+
+    /**
+     * chuyển đổi dữ liệu cập nhật sang dữ liệu truyền cho api để cập nhật
+     * @author: TTANH (03/08/2023)
+     * @param {Array} codesData dữ liệu thông tin cột
+     * @returns 1 mảng object đã được chuyển đổi
+     */
+    mapColumnsInfoFromCodeToRawForUpdate(codesData) {
+      let tempMapArray = [];
+
+      codesData.forEach((e) => {
+        let tempMap = this.mapColumnInfoFromCodeToRawForUpdate(e);
+
+        tempMapArray.push(tempMap);
+      });
+
+      return tempMapArray;
+    },
+
+    /**
+     * thực hiện cập nhật thông tin cột trên db
+     */
+    async updateColumnsInfoToDB(newData) {
+      let datasUpdate = this.mapColumnsInfoFromCodeToRawForUpdate(newData);
+
+      const res = await EmployeeLayoutService.updateMultiple(datasUpdate);
+
+      if (res.success) {
+      } else {
+        CommonErrorHandle();
       }
     },
   },
@@ -920,12 +1032,57 @@ export default {
     computedNoData() {
       return this.noData;
     },
+
+    computedDeletePopupText() {
+      if (this.isShowConfirmDeletePopup) {
+        return this.$t("employeeSubsystem.employeeContent.deletePopupTitle", {
+          code: this.employeeCodeDelete,
+        });
+      } else if (this.isShowConfirmDeleteMultiplePopup) {
+        return this.$t(
+          "employeeSubsystem.employeeContent.deleteMultiplePopupTitle",
+          { count: this.selectedEmployees.length }
+        );
+      } else {
+        return "";
+      }
+    },
   },
   watch: {
     searchText: debounce(function () {
       this.pagingData.pageNumber = 1;
       this.reloadData();
     }, 500),
+
+    pagingData: {
+      handler: function (newValue) {
+        localStorage.setItem("pageNumber", newValue.pageNumber);
+        localStorage.setItem("pageSize", newValue.pageSize);
+      },
+
+      deep: true,
+    },
+
+    employeeColumnsInfoRaw(newValue) {
+      let tempMapArray = this.mapColumnsInfoFromRawToCode(newValue);
+      /**
+       * do là việc lấy dữ liệu gây ra thay đổi cho employeeColumnsInfo
+       * nên không gọi đến hàm cập nhật
+       */
+      this.isUpdateColumnsInfo = false;
+
+      this.employeeColumnsInfo = tempMapArray;
+    },
+
+    employeeColumnsInfo: {
+      handler: debounce(function () {
+        if (this.isUpdateColumnsInfo) {
+          this.updateColumnsInfoToDB(this.employeeColumnsInfo);
+        }
+      }, 500),
+
+      deep: true,
+    },
   },
 };
 </script>

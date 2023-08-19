@@ -1,10 +1,23 @@
 import { createStore } from "vuex";
 import { findIndexByAttribute, generateUuid } from "@/helper/common.js";
+import { ProjectConfig } from "../config/config";
+
+function getLangCodeFromLocalStorage() {
+  let langCode = localStorage.getItem("langCode");
+
+  if (!langCode) {
+    localStorage.setItem("langCode", "vi");
+
+    langCode = localStorage.getItem("langCode");
+  }
+
+  return langCode;
+}
 
 export default createStore({
   state: {
     isExpandSidebar: true,
-    langCode: "VN",
+    langCode: getLangCodeFromLocalStorage(),
 
     /**
      * mỗi 1 toast sẽ có định dạng
@@ -21,7 +34,7 @@ export default createStore({
      *  + dd/MM/yyyy
      *  + MM/dd/yyyy
      */
-    formatDate: "dd/MM/yyyy",
+    formatDate: ProjectConfig.FormatDate,
   },
   getters: {},
   mutations: {
@@ -35,17 +48,15 @@ export default createStore({
     },
 
     /**
-     * hàm thay đổi ngôn ngữ của ứng dụng
-     *  - VN: Tiếng Việt
-     *  - EN: Tiếng Anh
-     * @author: TTANH (02/07/2023)
+     * set ngôn ngữ cho app
+     * @author: TTANH (05/08/2023)
      * @param {*} state
+     * @param {string} newLangCode mã ngôn ngữ: vi, en
      */
-    changeLangCode(state) {
-      if (state.langCode === "VN") {
-        state.langCode = "EN";
-      } else {
-        state.langCode = "VN";
+    setLangCode(state, newLangCode) {
+      if (state.langCode !== newLangCode) {
+        localStorage.setItem("langCode", newLangCode);
+        location.reload();
       }
     },
 

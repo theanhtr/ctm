@@ -8,6 +8,7 @@
         width="460px"
         :file="excelFile"
         @insert-file="onInsertFile"
+        tabindex="1"
       >
         <template #label>
           <div
@@ -19,12 +20,13 @@
               class="label-text flex-row"
               style="margin: 0px 4px 2px 6px; height: 16px; white-space: nowrap"
             >
-              Chọn tệp Excel
+              {{ $t("importExcel.selectSourceFile.selectExcelFile") }}
               <span
                 class="regular-text"
                 style="font-size: 12px; margin-left: 8px; color: #9a9a9a"
-                >Dung lượng tối đa 2MB</span
               >
+                {{ $t("importExcel.selectSourceFile.maximumSize") }}
+              </span>
             </div>
           </div>
         </template>
@@ -33,21 +35,25 @@
       <div class="content__left-download-template flex-row">
         <span class="download" @click="downloadBasicTemplate"
           ><span class="flex-row"
-            >Tải tệp mẫu cơ bản
+            >{{ $t("importExcel.selectSourceFile.downloadBasicTemplate") }}
             <misa-icon
               icon="download-icon"
               height="13px"
               width="16px"
-              tooltip="Tải tệp mẫu cơ bản" /></span
+              :tooltip="
+                $t('importExcel.selectSourceFile.downloadBasicTemplate')
+              " /></span
         ></span>
         <span class="download" @click="downloadFullTemplate"
           ><span class="flex-row"
-            >Tải tệp mẫu đầy đủ
+            >{{ $t("importExcel.selectSourceFile.downloadFullTemplate") }}
             <misa-icon
               icon="download-icon"
               height="13px"
               width="16px"
-              tooltip="Tải tệp mẫu đầy đủ" /></span
+              :tooltip="
+                $t('importExcel.selectSourceFile.downloadFullTemplate')
+              " /></span
         ></span>
       </div>
 
@@ -57,21 +63,23 @@
           v-model="sheetContainsData"
           ref="sheetContainsData"
           type="single-row"
-          labelText="Sheet chứa dữ liệu"
+          :labelText="$t('importExcel.selectSourceFile.sheetContainsData')"
           :inputRequired="true"
           :rowsData="sheetsFormat"
           class="w1/2"
+          tabindex="2"
         />
         <misa-textfield
           :errorText="errorText.headerRowIndex"
           v-model="headerRowIndex"
+          ref="headerRowIndex"
           type="number_no_dot"
           idInput="header-row-index"
-          labelText="Dòng tiêu đề là dòng số"
+          :labelText="$t('importExcel.selectSourceFile.headerRowIndex')"
           :inputRequired="true"
           style="padding-left: 6px"
           class="w1/2"
-          ref="headerRowIndex"
+          tabindex="3"
         />
       </div>
 
@@ -83,9 +91,10 @@
           nameRadioGroup="import-mode"
           :align="'column'"
           type="text"
-          labelText="Phương thức nhập"
+          :labelText="$t('importExcel.selectSourceFile.importModeTitle')"
           class="w1"
           marginLabel="24px 0px 16px"
+          tabindex="4"
         />
       </div>
     </div>
@@ -103,37 +112,44 @@
         <div class="inner-suggestion">
           <div class="flex items-center">
             <misa-icon icon="suggestion-icon" width="46px" height="46px" />
-            <div class="label-text suggestion-label">Gợi ý</div>
+            <div class="label-text suggestion-label">
+              {{ $t("importExcel.selectSourceFile.suggestionLabel") }}
+            </div>
           </div>
           <div class="suggestion-content download-template">
             <ul class="suggest-list">
               <li>
                 <div>
-                  <span @click="downloadBasicTemplate" class="download"
-                    >Tải tệp mẫu cơ bản</span
-                  >
-                  để nhập những thông tin cơ bản.
+                  <span @click="downloadBasicTemplate" class="download">{{
+                    $t("importExcel.selectSourceFile.downloadBasicTemplate")
+                  }}</span>
+                  {{ $t("importExcel.selectSourceFile.moreInfoBasicTemplate") }}
                 </div>
               </li>
               <li>
-                <span @click="downloadFullTemplate" class="download"
-                  >Tải tệp mẫu đầy đủ</span
+                <span @click="downloadFullTemplate" class="download">{{
+                  $t("importExcel.selectSourceFile.downloadFullTemplate")
+                }}</span>
+                {{ $t("importExcel.selectSourceFile.moreInfoFullTemplate") }}
+              </li>
+              <li>
+                {{ $t("importExcel.selectSourceFile.nextUseInfo") }}
+              </li>
+              <li>
+                <b>{{ $t("importExcel.selectSourceFile.importMode.add") }}:</b>
+                {{
+                  $t("importExcel.selectSourceFile.importModeAddDescription")
+                }}
+              </li>
+              <li>
+                <b
+                  >{{
+                    $t("importExcel.selectSourceFile.importMode.update")
+                  }}:</b
                 >
-                để nhập tất cả các thông tin.
-              </li>
-              <li>
-                Các thiết lập trong quá trình nhập sẽ được lưu để sử dụng trong
-                các lần tiếp sau.
-              </li>
-              <li>
-                <b>Thêm mới:</b> Dữ liệu trên tệp mà chưa có trong hệ thống sẽ
-                được thêm mới vào. Dữ liệu mà đã có trên hệ thống sẽ không được
-                cập nhật vào.
-              </li>
-              <li>
-                <b>Cập nhật:</b> Dữ liệu trên tệp mà chưa có trong hệ thống sẽ
-                được thêm mới vào. Dữ liệu mà đã có trên hệ thống sẽ được cập
-                nhật vào.
+                {{
+                  $t("importExcel.selectSourceFile.importModeUpdateDescription")
+                }}
               </li>
             </ul>
           </div>
@@ -152,10 +168,15 @@
 
 <script>
 import EmployeeService from "@/service/EmployeeService.js";
+import { CommonErrorHandle } from "@/helper/error-handle";
 import { ValidateConfig } from "@/config/config.js";
 
 export default {
   name: "EmployeeImportSelectSourceFile",
+
+  mounted() {
+    document.querySelector('[tabindex="1"]').focus();
+  },
 
   props: {
     excelFile: {
@@ -178,11 +199,11 @@ export default {
       importModeOptions: [
         {
           id: this.$_MISAEnum.IMPORT_MODE.ADD,
-          name: "Thêm mới",
+          name: this.$t("importExcel.selectSourceFile.importMode.add"),
         },
         {
           id: this.$_MISAEnum.IMPORT_MODE.UPDATE,
-          name: "Cập nhật",
+          name: this.$t("importExcel.selectSourceFile.importMode.update"),
         },
       ],
 
@@ -204,10 +225,9 @@ export default {
     fileValidate(file) {
       try {
         if (!file) {
-          this.errorText.excelFile =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].ImportSelectSourceFileNoti.FileNotFound;
+          this.errorText.excelFile = this.$t(
+            "errorHandle.importExcel.selectSourceFile.fileNotFound"
+          );
 
           this.isShowDialogError = true;
           this.$refs.excelFile.setInputToEmpty();
@@ -215,10 +235,9 @@ export default {
         }
 
         if (file.size > ValidateConfig.MaxSizeFileUpload) {
-          this.errorText.excelFile =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].ImportSelectSourceFileNoti.MaxSizeError;
+          this.errorText.excelFile = this.errorText.excelFile = this.$t(
+            "errorHandle.importExcel.selectSourceFile.maxSizeError"
+          );
 
           this.isShowDialogError = true;
           this.$refs.excelFile.setInputToEmpty();
@@ -228,11 +247,9 @@ export default {
         let fileExtention = file.name.split(".").pop();
 
         if (fileExtention !== "xlsx") {
-          this.errorText.excelFile =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].ImportSelectSourceFileNoti.FormatError;
-
+          this.errorText.excelFile = this.$t(
+            "errorHandle.importExcel.selectSourceFile.formatError"
+          );
           this.isShowDialogError = true;
           this.$refs.excelFile.setInputToEmpty();
           return false;
@@ -256,20 +273,17 @@ export default {
     settingValidate() {
       try {
         if (this.headerRowIndex <= 0) {
-          this.errorText.headerRowIndex =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].ImportSelectSourceFileNoti.HeaderIndexGreaterThanZero;
+          this.errorText.headerRowIndex = this.$t(
+            "errorHandle.importExcel.selectSourceFile.headerIndexGreaterThanZero"
+          );
 
           this.isShowDialogError = true;
           return false;
         }
 
         if (!this.sheetContainsData) {
-          this.errorText.sheetContainsData =
-            this.$_MISAResource[
-              this.$store.state.langCode
-            ].ImportSelectSourceFileNoti.SheetNotFound;
+          this.errorText.sheetContainsData = this.errorText.headerRowIndex =
+            this.$t("errorHandle.importExcel.selectSourceFile.sheetNotFound");
 
           this.isShowDialogError = true;
           return false;
@@ -310,34 +324,19 @@ export default {
             }
           } else {
             if (
-              res.errorCode === this.$_MISAEnum.ERROR_CODE.MAX_SIZE_FILE_ERROR
-            ) {
-              this.$store.commit("addToast", {
-                type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ImportSelectSourceFileNoti.MaxSizeError,
-              });
-
-              this.$refs.excelFile.setInputToEmpty();
-            } else if (
+              res.errorCode ===
+                this.$_MISAEnum.ERROR_CODE.MAX_SIZE_FILE_ERROR ||
               res.errorCode === this.$_MISAEnum.ERROR_CODE.FORMAT_EXCEL_ERROR
             ) {
               this.$store.commit("addToast", {
                 type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ImportSelectSourceFileNoti.FormatError,
+                text: res.userMsg,
               });
-
-              this.$refs.excelFile.setInputToEmpty();
             } else {
-              this.$store.commit("addToast", {
-                type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ServerError.ConnectError,
-              });
-
-              this.$refs.excelFile.setInputToEmpty();
+              CommonErrorHandle();
             }
+
+            this.$refs.excelFile.setInputToEmpty();
           }
         }
       } catch (error) {
@@ -373,29 +372,24 @@ export default {
           } else {
             if (
               res.errorCode ===
-              this.$_MISAEnum.ERROR_CODE.EXCEL_HEADER_DUPLICATE
-            ) {
-              this.$store.commit("addToast", {
-                type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ImportSelectSourceFileNoti.HeaderDuplicate,
-              });
-            } else if (
+                this.$_MISAEnum.ERROR_CODE.EXCEL_HEADER_DUPLICATE ||
               res.errorCode === this.$_MISAEnum.ERROR_CODE.EXCEL_HEADER_EMPTY
             ) {
               this.$store.commit("addToast", {
                 type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ImportSelectSourceFileNoti.HeaderEmpty,
+                text: res.userMsg,
               });
+
+              this.$refs.headerRowIndex.focus();
             } else if (
               res.errorCode === this.$_MISAEnum.ERROR_CODE.SHEET_IS_EMPTY
             ) {
               this.$store.commit("addToast", {
                 type: "error",
-                text: this.$_MISAResource[this.$store.state.langCode]
-                  .ImportSelectSourceFileNoti.SheetIsEmpty,
+                text: res.userMsg,
               });
+
+              this.$refs.sheetContainsData.focus();
             }
           }
 

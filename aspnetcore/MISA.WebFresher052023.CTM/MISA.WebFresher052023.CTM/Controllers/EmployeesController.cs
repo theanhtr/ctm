@@ -15,8 +15,9 @@ namespace MISA.WebFresher052023.CTM.Controllers
     public class EmployeesController : CodeController<Employee, EmployeeDto, EmployeeCreateDto, EmployeeUpdateDto>
     {
         #region Fields
-        private readonly IExcelService<EmployeeExcelDto> _excelService;
+        private readonly IExcelService<EmployeeExcelDto, EmployeeLayoutDto> _excelService;
         private readonly IEmployeeService _employeeService;
+        private readonly IEmployeeLayoutService _employeeLayoutService;
         private readonly IHostEnvironment _hostEnvironment;
         private readonly IFileService _fileService;
         private readonly ICacheService _cacheService;
@@ -24,7 +25,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
         #endregion
 
         #region Constructor
-        public EmployeesController(IEmployeeService employeeService, IExcelService<EmployeeExcelDto> excelService, IHostEnvironment hostEnvironment, IFileService fileService, ICacheService cacheService) : base(employeeService)
+        public EmployeesController(IEmployeeService employeeService, IExcelService<EmployeeExcelDto, EmployeeLayoutDto> excelService, IHostEnvironment hostEnvironment, IFileService fileService, ICacheService cacheService, IEmployeeLayoutService employeeLayoutService) : base(employeeService)
         {
             _employeeService = employeeService;
             _excelService = excelService;
@@ -32,6 +33,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
             folderStore = Path.Combine(_hostEnvironment.ContentRootPath, AppConst.ClientFolderStoreName);
             _fileService = fileService;
             _cacheService = cacheService;
+            _employeeLayoutService = employeeLayoutService;
         }
         #endregion
 
@@ -45,9 +47,11 @@ namespace MISA.WebFresher052023.CTM.Controllers
         [HttpGet("excel")]
         public async Task<IActionResult> ExportToExcelAsync([FromQuery] string? searchText)
         {
-            var content = await _excelService.ExportToExcelAsync(searchText);
+            var headersInfo = await _employeeLayoutService.GetAsync();
 
-            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Danh_sach_nhan_vien.xlsx");
+            var content = await _excelService.ExportToExcelAsync(searchText, Resource.Excel_Employee_Title_Export, headersInfo.ToList());
+
+            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Resource.Employee_Excel_Export_File_Name);
         }
 
         /// <summary>
@@ -58,7 +62,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
         public async Task<IActionResult> DownloadBasicTemplate()
         {
             var folderServerPath = Path.Combine(_hostEnvironment.ContentRootPath, AppConst.ServerFolderStoreName, "employee-excel-template");
-            var filePath = Path.Combine(folderServerPath, "Mau_danh_muc_nhan_vien.xlsx");
+            var filePath = Path.Combine(folderServerPath, Resource.Employee_Basic_Excel_Template_File_Name);
 
             // Kiểm tra xem file có tồn tại hay không
             if (!System.IO.File.Exists(filePath))
@@ -69,7 +73,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
             // Đọc nội dung của file Excel
             var content = System.IO.File.ReadAllBytes(filePath);
 
-            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Mau_danh_muc_nhan_vien.xlsx");
+            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Resource.Employee_Basic_Excel_Template_File_Name);
         }
 
         /// <summary>
@@ -80,7 +84,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
         public async Task<IActionResult> DownloadFullTemplate()
         {
             var folderServerPath = Path.Combine(_hostEnvironment.ContentRootPath, AppConst.ServerFolderStoreName, "employee-excel-template");
-            var filePath = Path.Combine(folderServerPath, "Mau_danh_muc_nhan_vien_full.xlsx");
+            var filePath = Path.Combine(folderServerPath, Resource.Employee_Full_Excel_Template_File_Name);
 
             // Kiểm tra xem file có tồn tại hay không
             if (!System.IO.File.Exists(filePath))
@@ -91,7 +95,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
             // Đọc nội dung của file Excel
             var content = System.IO.File.ReadAllBytes(filePath);
 
-            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Mau_danh_muc_nhan_vien_full.xlsx");
+            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Resource.Employee_Full_Excel_Template_File_Name);
         }
 
         /// <summary>
@@ -105,27 +109,29 @@ namespace MISA.WebFresher052023.CTM.Controllers
             {
                 if (excelFile.Length > AppConst.MaxSizeFileUpload)
                 {
-                    throw new ValidateException(StatusErrorCode.MaxSizeFileError, ResourceVN.Max_Size_File_Error, excelFile.Length);
+                    throw new ValidateException(StatusErrorCode.MaxSizeFileError, Resource.Max_Size_File_Error, excelFile.Length);
                 }
 
                 var fileExtention = excelFile.FileName.Split('.').Last<string>();
 
                 if (fileExtention != "xlsx")
                 {
-                    throw new ValidateException(StatusErrorCode.FormatExcelError, ResourceVN.Format_Excel_Error, fileExtention);
+                    throw new ValidateException(StatusErrorCode.FormatExcelError, Resource.Format_Excel_Error, fileExtention);
                 }
 
-                HttpContext.Session.SetString("ExcelFileId", Guid.NewGuid().ToString());
+                //Lưu tên file vào cache
+                var expiryTime = DateTimeOffset.Now.AddMinutes(AppConst.ExpiredTime);
+                await _cacheService.SetAsync<string>("ExcelFileId", Guid.NewGuid().ToString(), expiryTime);
 
-                var excelFileId = HttpContext.Session.GetString("ExcelFileId");
+                var excelFileId = await _cacheService.GetAsync<string>("ExcelFileId");
 
                 var fileName = $"{excelFileId}.xlsx";
 
                 var filePath = _fileService.CreateFile(folderStore, fileName, excelFile);
 
-                HttpContext.Session.SetString("ExcelFilePath", filePath);
+                await _cacheService.SetAsync<string>("ExcelFilePath", filePath, expiryTime);
 
-                var dataSetting = _excelService.GetExcelSettingData(filePath, ResourceVN.Excel_Employee_Code_Header_Name);
+                var dataSetting = _excelService.GetExcelSettingData(filePath, Resource.Excel_Employee_Code_Header_Name);
 
                 return StatusCode(StatusCodes.Status200OK, dataSetting);
             }
@@ -145,15 +151,16 @@ namespace MISA.WebFresher052023.CTM.Controllers
         [HttpPost("excel/add-setting")]
         public async Task<IActionResult> AddSettingExcelAsync([FromBody] ExcelImportSetting importExcelSetting)
         {
-            HttpContext.Session.SetString("SheetContainsData", importExcelSetting.SheetContainsData.ToString());
-            HttpContext.Session.SetInt32("HeaderRowIndex", importExcelSetting.HeaderRowIndex);
-            HttpContext.Session.SetInt32("ImportMode", (int)importExcelSetting.ImportMode);
+            var expiryTime = DateTimeOffset.Now.AddMinutes(AppConst.ExpiredTime);
+            await _cacheService.SetAsync<string>("SheetContainsData", importExcelSetting.SheetContainsData.ToString(), expiryTime);
+            await _cacheService.SetAsync<int>("HeaderRowIndex", importExcelSetting.HeaderRowIndex, expiryTime);
+            await _cacheService.SetAsync<ImportMode>("ImportMode", importExcelSetting.ImportMode, expiryTime);
 
-            var excelFileId = HttpContext.Session.GetString("ExcelFileId");
+            var excelFileId = await _cacheService.GetAsync<string>("ExcelFileId");
 
             if (string.IsNullOrEmpty(excelFileId))
             {
-                throw new NotFoundException(StatusErrorCode.SessionIsOver, ResourceVN.Session_Is_Over);
+                throw new NotFoundException(StatusErrorCode.SessionIsOver, Resource.Session_Is_Over);
             }
 
             var fileName = $"{excelFileId}.xlsx";
@@ -172,14 +179,14 @@ namespace MISA.WebFresher052023.CTM.Controllers
         [HttpPost("excel/header-map-column")]
         public async Task<IActionResult> HeaderMapColumnAsync([FromBody] List<ExcelHeaderMapColumn> excelHeadersMapColumns)
         {
-            var sheetUsed = HttpContext.Session.GetString("SheetContainsData");
-            var headerRowIndex = HttpContext.Session.GetInt32("HeaderRowIndex") ?? 1;
-            var importMode = (ImportMode)HttpContext.Session.GetInt32("ImportMode");
-            var excelFileId = HttpContext.Session.GetString("ExcelFileId");
+            var sheetUsed = await _cacheService.GetAsync<string>("SheetContainsData");
+            var headerRowIndex = await _cacheService.GetAsync<int>("HeaderRowIndex");
+            var importMode = await _cacheService.GetAsync<ImportMode>("ImportMode");
+            var excelFileId = await _cacheService.GetAsync<string>("ExcelFileId");
 
             if (string.IsNullOrEmpty(sheetUsed))
             {
-                throw new NotFoundException(StatusErrorCode.SessionIsOver, ResourceVN.Session_Is_Over);
+                throw new NotFoundException(StatusErrorCode.SessionIsOver, Resource.Session_Is_Over);
             }
 
             var fileName = $"{excelFileId}.xlsx";
@@ -193,7 +200,7 @@ namespace MISA.WebFresher052023.CTM.Controllers
             var expiryTime = DateTimeOffset.Now.AddMinutes(AppConst.ExpiredTime);
             await _cacheService.SetAsync<IEnumerable<EmployeeExcelDto>>(excelFileId, employeesExcelValidate, expiryTime);
 
-            var response = new SuccessResponseFormat(StatusSuccessCode.ImportExcelRequestSuccess, ResourceVN.Import_Excel_Request_Success, null);
+            var response = new SuccessResponseFormat(StatusSuccessCode.ImportExcelRequestSuccess, Resource.Import_Excel_Request_Success, null);
 
             return StatusCode(StatusCodes.Status200OK, response);
         }
@@ -208,18 +215,18 @@ namespace MISA.WebFresher052023.CTM.Controllers
         [HttpGet("excel/check-data-filter")]
         public async Task<IActionResult> CheckDataFilterAsync([FromQuery] FilterExcelDataValidateType filterExcelDataValidateType, [FromQuery] int pageSize, [FromQuery] int pageNumber)
         {
-            var excelFileId = HttpContext.Session.GetString("ExcelFileId");
+            var excelFileId = await _cacheService.GetAsync<string>("ExcelFileId");
 
             if (string.IsNullOrEmpty(excelFileId))
             {
-                throw new NotFoundException(StatusErrorCode.SessionIsOver, ResourceVN.Session_Is_Over);
+                throw new NotFoundException(StatusErrorCode.SessionIsOver, Resource.Session_Is_Over);
             }
 
             var employeesValidate = await _cacheService.GetAsync<IEnumerable<EmployeeExcelDto>>(excelFileId);
 
             if (string.IsNullOrEmpty(excelFileId) || employeesValidate == null)
             {
-                throw new NotFoundException(StatusErrorCode.SessionIsOver, ResourceVN.Session_Is_Over);
+                throw new NotFoundException(StatusErrorCode.SessionIsOver, Resource.Session_Is_Over);
             }
 
             var employeesValidateFilter = _employeeService.FilterExcelData(employeesValidate.ToList(), filterExcelDataValidateType, pageSize, pageNumber);
@@ -234,20 +241,20 @@ namespace MISA.WebFresher052023.CTM.Controllers
         [HttpPost("excel/confirm-import-excel-file")]
         public async Task<IActionResult> ConfirmImportExcelFile()
         {
-            var excelFileId = HttpContext.Session.GetString("ExcelFileId");
-            var filePath = HttpContext.Session.GetString("ExcelFilePath");
-            var importMode = (ImportMode)HttpContext.Session.GetInt32("ImportMode");
+            var excelFileId = await _cacheService.GetAsync<string>("ExcelFileId");
+            var filePath = await _cacheService.GetAsync<string>("ExcelFilePath");
+            var importMode = await _cacheService.GetAsync<ImportMode>("ImportMode");
 
             if (string.IsNullOrEmpty(excelFileId))
             {
-                throw new NotFoundException(StatusErrorCode.SessionIsOver, ResourceVN.Session_Is_Over);
+                throw new NotFoundException(StatusErrorCode.SessionIsOver, Resource.Session_Is_Over);
             }
 
             var employeesExcelDto = await _cacheService.GetAsync<IEnumerable<EmployeeExcelDto>>(excelFileId);
 
             if (employeesExcelDto == null)
             {
-                throw new NotFoundException(StatusErrorCode.SessionIsOver, ResourceVN.Session_Is_Over);
+                throw new NotFoundException(StatusErrorCode.SessionIsOver, Resource.Session_Is_Over);
             }
 
             var totalChangeRecord = 0;

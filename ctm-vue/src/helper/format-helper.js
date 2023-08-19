@@ -1,3 +1,6 @@
+import MISAResource from "../resource/resource";
+import store from "../store";
+
 /**
  * convert string từ: trần thế anh -> Trần Thế Anh
  * @author: TTANH (26/06/2023)
@@ -112,16 +115,13 @@ export function formatToGenderName(rawValue) {
   try {
     switch (rawValue) {
       case 0:
-        return "Nam";
-        break;
+        return MISAResource[store.state.langCode].common.gender.male;
 
       case 1:
-        return "Nữ";
-        break;
+        return MISAResource[store.state.langCode].common.gender.female;
 
       case 2:
-        return "Khác";
-        break;
+        return MISAResource[store.state.langCode].common.gender.other;
 
       default:
         break;

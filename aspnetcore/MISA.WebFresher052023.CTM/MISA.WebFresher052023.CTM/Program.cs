@@ -8,6 +8,7 @@ using Hangfire;
 using Hangfire.MySql;
 using System.Reflection;
 using Microsoft.Extensions.Hosting;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,8 +39,8 @@ builder.Services.AddControllers()
             return new BadRequestObjectResult(new BaseException
             {
                 ErrorCode = (int)HttpStatusCode.BadRequest,
-                DevMessage = ResourceVN.Validate_User_Input_Error,
-                UserMessage = ResourceVN.Validate_User_Input_Error,
+                DevMessage = Resource.Validate_User_Input_Error,
+                UserMessage = Resource.Validate_User_Input_Error,
                 TraceId = "",
                 MoreInfo = "",
                 Data = errors,
@@ -58,9 +59,6 @@ builder.Services.AddSession(options =>
 {
     //thời gian chờ trước khi bị hủy bỏ
     options.IdleTimeout = TimeSpan.FromMinutes(AppConst.ExpiredTime);
-
-    //cookie dùng để lưu session, và ko thể truy cập session bằng js
-    options.Cookie.HttpOnly = true;
 });
 
 var dbConnectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
@@ -93,6 +91,21 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<ICacheService>(option => new CacheService(redisConnectionString));
 
+// thêm Localization cho đa ngôn ngữ
+builder.Services.AddLocalization();
+var localizationOptions = new RequestLocalizationOptions();
+
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("vi"),
+};
+
+localizationOptions.SupportedCultures = supportedCultures;
+localizationOptions.SupportedUICultures = supportedCultures;
+localizationOptions.SetDefaultCulture("en");
+localizationOptions.ApplyCurrentCultureToResponseHeaders = true;
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -102,16 +115,19 @@ builder.Services.AddScoped<IUnitOfWork>(option => new UnitOfWork(dbConnectionStr
 builder.Services.AddTransient<IScheduleService, ScheduleService>();
 
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-builder.Services.AddScoped<IExcelService<EmployeeExcelDto>, EmployeeExcelService>();
-
+builder.Services.AddScoped<IEmployeeValidate, EmployeeValidate>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IExcelService<EmployeeExcelDto, EmployeeLayoutDto>, EmployeeExcelService>();
+
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IDepartmentValidate, DepartmentValidate>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
-builder.Services.AddScoped<IEmployeeValidate, EmployeeValidate>();
-builder.Services.AddScoped<IDepartmentValidate, DepartmentValidate>();
+builder.Services.AddScoped<IEmployeeLayoutService, EmployeeLayoutService>();
+builder.Services.AddScoped<IEmployeeLayoutValidate, EmployeeLayoutValidate>();
+builder.Services.AddScoped<IEmployeeLayoutRepository, EmployeeLayoutRepository>();
 
-builder.Services.AddScoped<IExcelWorker<EmployeeDto, EmployeeExcelDto>, EmployeeExcelWorker>();
+builder.Services.AddScoped<IExcelWorker<EmployeeDto, EmployeeExcelDto, EmployeeLayoutDto>, EmployeeExcelWorker>();
 
 builder.Services.AddScoped<IFileService, FileService>();
 
@@ -140,6 +156,10 @@ var clientFolderStore = Path.Combine(rootPath, AppConst.ClientFolderStoreName);
 RecurringJob.AddOrUpdate<IScheduleService>(scheduleService => scheduleService.ClearFiles(clientFolderStore), AppConst.CronJobTime);
 
 app.UseCors("MyCors");
+
+// thêm localization
+app.UseRequestLocalization(localizationOptions);
+app.UseMiddleware<LocalizationMiddleware>();
 
 app.MapControllers();
 

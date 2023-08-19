@@ -16,6 +16,8 @@ namespace MISA.WebFresher052023.CTM.Application.Tests
         private IMapper _mapper;
 
         private IEmployeeValidate _employeeValidate;
+
+        private IEmployeeLayoutService _employeeLayoutService;
         #endregion
 
         #region SetUp
@@ -24,13 +26,15 @@ namespace MISA.WebFresher052023.CTM.Application.Tests
         {
             _departmentRepository = Substitute.For<IDepartmentRepository>();
 
+            _employeeLayoutService = Substitute.For<IEmployeeLayoutService>();
+
             _employeeRepository = Substitute.For<IEmployeeRepository>();
 
             _mapper = Substitute.For<IMapper>();
 
             _employeeValidate = Substitute.For<IEmployeeValidate>();
 
-            _employeeService = new EmployeeService(_employeeRepository, _mapper, _employeeValidate, _departmentRepository);
+            _employeeService = new EmployeeService(_employeeRepository, _mapper, _employeeValidate, _departmentRepository, _employeeLayoutService);
         } 
         #endregion
 
@@ -45,7 +49,7 @@ namespace MISA.WebFresher052023.CTM.Application.Tests
         {
             //Arrange
             var ids = new List<Guid>();
-            var expectedMessage = ResourceVN.Delete_Empty_Error;
+            var expectedMessage = Resource.Delete_Empty_Error;
 
             // Act & Assert
             var exception = Assert.ThrowsAsync<ValidateException>(async () => await _employeeService.DeleteMultipleAsync(ids));
@@ -71,7 +75,7 @@ namespace MISA.WebFresher052023.CTM.Application.Tests
 
             _employeeRepository.GetListByIdsAsync(ids).Returns(employees);
 
-            var expectedMessage = ResourceVN.Exception_NotFound_Default;
+            var expectedMessage = Resource.Exception_NotFound_Default;
 
             var exception = Assert.ThrowsAsync<NotFoundException>(async () => await _employeeService.DeleteMultipleAsync(ids));
 

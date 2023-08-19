@@ -29,11 +29,11 @@ namespace MISA.WebFresher052023.CTM.Domain
         /// CreatedBy: TTANH (14/07/2023)
         public async Task<bool> CodeValidate(string code)
         {
-            var regexCode = new Regex(ResourceVN.Code_Regex);
+            var regexCode = new Regex(Resource.Code_Regex);
 
             if (!regexCode.IsMatch(code))
             {
-                var messageError = string.Format(ResourceVN.Wrong_Format_Code, code);
+                var messageError = string.Format(Resource.Wrong_Format_Code, code);
                 throw new ValidateException(StatusErrorCode.WrongFormatCode, messageError, null);
             }
 
@@ -41,7 +41,7 @@ namespace MISA.WebFresher052023.CTM.Domain
 
             if (checkEntity != null)
             {
-                var messageError = string.Format(ResourceVN.Code_Exist, code);
+                var messageError = string.Format(Resource.Code_Exist, code);
                 throw new ValidateException(StatusErrorCode.CodeDuplicate, messageError, null);
             }
 

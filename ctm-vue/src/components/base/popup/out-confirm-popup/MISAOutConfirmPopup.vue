@@ -21,9 +21,7 @@
             width="auto"
             icon="question--large"
           />
-          <span>{{
-            $_MISAResource[this.$store.state.langCode].OutConfirmPopup.Title
-          }}</span>
+          <span>{{ $t("component.popup.outConfirmPopupTitle") }}</span>
         </div>
       </template>
 
@@ -45,7 +43,7 @@
               tabindex="999"
               ref="CancelButtonRef"
               @keydown="onKeyDownCancelButton"
-              >Hủy</misa-button
+              >{{ $t("common.button.cancel") }}</misa-button
             >
           </div>
           <div class="footer__button-right">
@@ -56,7 +54,7 @@
               padding="0px 18px"
               @clickBtnContainer="$emit('no-click')"
               tabindex="1000"
-              >Không</misa-button
+              >{{ $t("common.button.no") }}</misa-button
             >
             <misa-button
               type="main"
@@ -66,7 +64,7 @@
               tabindex="1001"
               @clickBtnContainer="$emit('yes-click')"
               @keydown="onKeyDownYesButton"
-              >Có</misa-button
+              >{{ $t("common.button.yes") }}</misa-button
             >
           </div>
         </div>

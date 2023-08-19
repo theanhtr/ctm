@@ -2,10 +2,20 @@
   <div class="step-4">
     <div class="header__step-4 flex-column">
       <div class="step-4__title--success">
-        {{ recordSuccess }}/{{ totalRecord }} dòng dữ liệu nhập thành công
+        {{
+          $t("importExcel.importResult.header.successTitle", {
+            recordSuccess: recordSuccess,
+            totalRecord: totalRecord,
+          })
+        }}
       </div>
       <div class="step-4__title--fail">
-        {{ recordFail }}/{{ totalRecord }} dòng dữ liệu nhập không thành công
+        {{
+          $t("importExcel.importResult.header.failTitle", {
+            recordFail: recordFail,
+            totalRecord: totalRecord,
+          })
+        }}
       </div>
     </div>
 

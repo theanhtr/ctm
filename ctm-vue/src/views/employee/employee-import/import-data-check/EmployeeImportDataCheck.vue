@@ -3,14 +3,24 @@
     <div class="header__step-3 flex-row">
       <div class="header__step-3__left flex-column">
         <div class="step-3__title--valid">
-          {{ modelValue.validRecord }} dòng dữ liệu nhân viên hợp lệ
+          {{
+            $t("importExcel.dataCheck.header.validTitle", {
+              validCount: modelValue.validRecord,
+            })
+          }}
         </div>
         <div class="step-3__title--invalid">
-          {{ modelValue.invalidRecord }} dòng dữ liệu nhân viên không hợp lệ
+          {{
+            $t("importExcel.dataCheck.header.invalidTitle", {
+              invalidCount: modelValue.invalidRecord,
+            })
+          }}
         </div>
       </div>
       <div class="header__step-3__right flex-row">
-        <div class="header__step-3__right--title">Lọc tình trạng:</div>
+        <div class="header__step-3__right--title">
+          {{ $t("importExcel.dataCheck.header.statusFilter.title") }}:
+        </div>
         <misa-combobox
           v-model="filterExcelDataValiateType"
           type="single-row"
@@ -49,6 +59,7 @@
 <script>
 import EmployeeService from "@/service/EmployeeService.js";
 import { dataCheckColumnsInfo } from "./DataCheckColumnsInfo.js";
+import { CommonErrorHandle } from "@/helper/error-handle";
 
 export default {
   name: "EmployeeImportDataCheck",
@@ -71,18 +82,18 @@ export default {
       filterOptions: [
         {
           id: this.$_MISAEnum.FILTER_EXCEL_DATA_VALIDATE_TYPE.ALL,
-          name: "Tất cả",
-          code: "Tất cả",
+          name: this.$t("importExcel.dataCheck.header.statusFilter.all"),
+          code: this.$t("importExcel.dataCheck.header.statusFilter.all"),
         },
         {
           id: this.$_MISAEnum.FILTER_EXCEL_DATA_VALIDATE_TYPE.INVALID,
-          name: "Không hợp lệ",
-          code: "Không hợp lệ",
+          name: this.$t("importExcel.dataCheck.header.statusFilter.invalid"),
+          code: this.$t("importExcel.dataCheck.header.statusFilter.invalid"),
         },
         {
           id: this.$_MISAEnum.FILTER_EXCEL_DATA_VALIDATE_TYPE.VALID,
-          name: "Hợp lệ",
-          code: "Hợp lệ",
+          name: this.$t("importExcel.dataCheck.header.statusFilter.valid"),
+          code: this.$t("importExcel.dataCheck.header.statusFilter.valid"),
         },
       ],
 
@@ -112,6 +123,9 @@ export default {
      * @author: TTANH (25/07/2023)
      */
     async countRecordValidate() {
+      this.modelValue.validRecord = 0;
+      this.modelValue.invalidRecord = 0;
+
       const res = await EmployeeService.checkDataExcelFilter({
         pageSize: 99999999,
         pageNumber: 1,
@@ -136,6 +150,8 @@ export default {
         });
 
         this.modelValue.countRecord = res.data.TotalRecord;
+      } else {
+        CommonErrorHandle();
       }
     },
 
@@ -160,6 +176,7 @@ export default {
             this.employeesValidate = res.data.Data;
             this.pagingData.totalPage = res.data.TotalPage;
             this.pagingData.totalRecord = res.data.TotalRecord;
+            this.pagingData.pageNumber = res.data.CurrentPage;
             this.noData = false;
           } else {
             this.noData = true;
@@ -168,9 +185,10 @@ export default {
           if (res.errorCode === this.$_MISAEnum.ERROR_CODE.SESSION_IS_OVER) {
             this.$store.commit("addToast", {
               type: "error",
-              text: this.$_MISAResource[this.$store.state.langCode].ImportExcel
-                .SessionIsOver,
+              text: res.userMsg,
             });
+          } else {
+            CommonErrorHandle();
           }
         }
       } catch (error) {

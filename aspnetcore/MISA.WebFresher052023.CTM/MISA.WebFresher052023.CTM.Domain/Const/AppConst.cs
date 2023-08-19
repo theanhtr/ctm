@@ -28,9 +28,9 @@
 
         /// <summary>
         /// Thời gian để chạy cron job
-        /// Chạy mỗi 50 phút
+        /// Chạy mỗi 15 phút
         /// </summary>
-        public const string CronJobTime = "*/50 * * * *";
+        public const string CronJobTime = "*/15 * * * *";
 
         /// <summary>
         /// Giới hạn dung lượng file truyền lên - 2mb

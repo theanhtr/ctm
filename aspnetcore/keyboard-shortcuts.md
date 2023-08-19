@@ -1,5 +1,11 @@
 # Phím tắt
 
+# Debug db
+
+set GLOBAL general_log = 1;
+set GLOBAL log_output = 'table';
+SELECT \* FROM mysql.general_log WHERE argument LIKE '%CALL%' ORDER BY event_time desc;
+
 # VS Code
 
 Ctrl + R: chuyển folder

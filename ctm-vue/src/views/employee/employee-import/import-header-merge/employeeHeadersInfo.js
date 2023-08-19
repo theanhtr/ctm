@@ -1,288 +1,369 @@
+import MISAResource from "../../../../resource/resource.js";
+import store from "../../../../store";
+
 export var headersInfo = [
   {
     id: "EmployeeCode",
     serverName: "EmployeeCode",
-    showName: "Mã nhân viên",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.employeeCode.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: true,
-    isSelected: true,
     isCannotChangeChecked: true, //những trường bắt buộc phải thêm
-    description: "Nhập mã nhân viên",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.employeeCode.description,
   },
   {
     id: "FullName",
     serverName: "FullName",
-    showName: "Tên nhân viên",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.fullname.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: true,
-    isSelected: true,
     isCannotChangeChecked: true,
-    description: "Nhập tên nhân viên",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.fullname.description,
   },
   {
     id: "DepartmentCode",
     serverName: "DepartmentCode",
-    showName: "Mã đơn vị",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.departmentCode.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: true,
-    isSelected: true,
     isCannotChangeChecked: true,
-    description: "Nhập mã đơn vị",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.departmentCode.description,
   },
   {
     id: "Gender",
     serverName: "Gender",
-    showName: "Giới tính",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.gender.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "Nam; Nữ; Khác",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.gender.description,
   },
   {
     id: "DateOfBirth",
     serverName: "DateOfBirth",
-    showName: "Ngày sinh",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.dateOfBirth.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.dateOfBirth.description,
   },
   {
     id: "IdentityNumber",
     serverName: "IdentityNumber",
-    showName: "Số CMND",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.identityNumber.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "Nhập số chứng minh nhân dân",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.identityNumber.description,
   },
   {
     id: "IdentityDate",
     serverName: "IdentityDate",
-    showName: "Ngày cấp",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.identityDate.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "Ngày cấp chứng minh nhân dân",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.identityDate.description,
   },
   {
     id: "IdentityPlace",
     serverName: "IdentityPlace",
-    showName: "Nơi cấp",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.identityPlace.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "Nơi cấp chứng minh nhân dân",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.identityPlace.description,
   },
   {
     id: "Position",
     serverName: "Position",
-    showName: "Chức danh",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.position.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.position.description,
   },
   {
     id: "SupplierCustomerGroup",
     serverName: "SupplierCustomerGroup",
-    showName: "Nhóm KH, NCC",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.supplierCustomerGroup.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "Nhóm khách hàng, nhà cung cấp",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.supplierCustomerGroup.description,
   },
   {
     id: "PayAccount",
     serverName: "PayAccount",
-    showName: "TK công nợ phải trả",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.payAccount.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.payAccount.description,
   },
   {
     id: "ReceiveAccount",
     serverName: "ReceiveAccount",
-    showName: "TK công nợ phải thu",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.receiveAccount.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.receiveAccount.description,
   },
   {
     id: "Salary",
     serverName: "Salary",
-    showName: "Lương thỏa thuận",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.salary.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.salary.description,
   },
   {
     id: "SalaryCoefficients",
     serverName: "SalaryCoefficients",
-    showName: "Hệ số lương",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.salaryCoefficients.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.salaryCoefficients.description,
   },
   {
     id: "SalaryPaidForInsurance",
     serverName: "SalaryPaidForInsurance",
-    showName: "Lương đóng bảo hiểm",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.salaryPaidForInsurance.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.salaryPaidForInsurance.description,
   },
   {
     id: "PersonalTaxCode",
     serverName: "PersonalTaxCode",
-    showName: "Mã số thuế",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.personalTaxCode.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.personalTaxCode.description,
   },
   {
     id: "TypeOfContract",
     serverName: "TypeOfContract",
-    showName: "Loại hợp đồng",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.typeOfContract.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.typeOfContract.description,
   },
   {
     id: "NumberOfDependents",
     serverName: "NumberOfDependents",
-    showName: "Số người phụ thuộc",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.numberOfDependents.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.numberOfDependents.description,
   },
   {
     id: "AccountNumber",
     serverName: "AccountNumber",
-    showName: "Số tài khoản",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.accountNumber.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.accountNumber.description,
   },
   {
     id: "BankName",
     serverName: "BankName",
-    showName: "Tên ngân hàng",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.bankName.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.bankName.description,
   },
   {
     id: "BankBranch",
     serverName: "BankBranch",
-    showName: "Chi nhánh TK ngân hàng",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.bankBranch.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.bankBranch.description,
   },
   {
     id: "BankProvince",
     serverName: "BankProvince",
-    showName: "Tỉnh/TP ngân hàng",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.bankProvince.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.bankProvince.description,
   },
   {
     id: "ContactAddress",
     serverName: "ContactAddress",
-    showName: "Địa chỉ",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactAddress.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactAddress.description,
   },
   {
     id: "ContactPhoneNumber",
     serverName: "ContactPhoneNumber",
-    showName: "ĐT di động",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactPhoneNumber.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactPhoneNumber.description,
   },
   {
     id: "ContactLandlinePhoneNumber",
     serverName: "ContactLandlinePhoneNumber",
-    showName: "ĐT cố định",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactLandlinePhoneNumber.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactLandlinePhoneNumber.description,
   },
   {
     id: "ContactEmail",
     serverName: "ContactEmail",
-    showName: "Email",
+    showName:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactEmail.showName,
     excelColumnIndex: 0,
     isShow: true,
     isRequired: false,
-    isSelected: false,
     isCannotChangeChecked: false,
-    description: "",
+    description:
+      MISAResource[store.state.langCode].importExcel.headerMerge
+        .employeeHeaderInfo.contactEmail.description,
   },
 ];

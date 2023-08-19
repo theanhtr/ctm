@@ -23,7 +23,9 @@
 /* icon button */
 .i-button .misa-button--container {
   min-width: 0;
-  background-color: #fff;
+  background-color: transparent;
+  outline: none;
+  border: none;
 }
 
 /* text button */
@@ -52,6 +54,7 @@
   width: auto;
   min-width: 0px;
   background-color: transparent;
+  border-radius: var(--border-radius-default) !important;
 }
 
 /* combo button */
@@ -84,7 +87,7 @@
   top: calc(100% + 4px);
   right: 0;
   background-color: white;
-  padding: 4px;
+  padding: 2px 0px;
   white-space: nowrap;
   width: fit-content;
   border-radius: var(--border-radius-default);
@@ -113,10 +116,19 @@
   color: var(--primary-btn-background-color);
 }
 
+.data__dropdown .data__item--selected {
+  background-color: var(--primary-btn-background-color);
+  color: #e8e9ec;
+}
+
 /* hover */
 .m-button .misa-button--container:hover,
 .t-button .misa-button--container:hover {
   background-color: var(--primary-btn--hover-background-color);
+}
+
+.i-button .misa-button--container:hover {
+  outline: var(--border-color-default) solid 2px !important;
 }
 
 .m-button--disable .misa-button--container,
@@ -135,15 +147,33 @@
   color: var(--primary-btn-background-color-opacity);
 }
 
-/* button focus */
-.misa-button--focus::before {
-  content: "";
-  border: 1px solid var(--border-color-default);
-  height: 120%;
-  width: 105%;
-  background-color: transparent;
-  position: absolute;
-  top: -10%;
-  left: -2.5%;
-  border-radius: inherit;
+.misa-button--focus {
+  outline: var(--border-color-default) solid 2px !important;
+}
+
+.i-button .misa-button--container:active,
+.t-button .misa-button--container:active,
+.s-button .misa-button--container:active,
+.dd-button .misa-button--container:active {
+  outline: var(--border-color-default) solid 2px;
+  background-color: var(--sub-btn-background-color--active);
+}
+
+.m-button .misa-button--container:active {
+  outline: var(--border-color-default) solid 2px;
+  background-color: var(--primary-btn--active-background-color);
+}
+
+.l-button .misa-button--container:active {
+  outline: var(--border-color-default) solid 2px;
+}
+
+.cb-button .misa-button--container:active {
+  outline: none;
+}
+
+.cb-button .misa-button--container .button__title:active,
+.cb-button .misa-button--container .button__dropdown:active {
+  outline: var(--border-color-default) solid 2px;
+  background-color: var(--primary-btn--active-background-color);
 }

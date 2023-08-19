@@ -28,6 +28,54 @@ export const findIndexByAttribute = function (arrayFind, attr, valueFind) {
 };
 
 /**
+ * tìm kiếm vị trí của 1 giá trị với string và tìm kiếm theo hướng LIKE '%a%'
+ * @param {Array} arrayFind mảng cần tìm kiếm
+ * @param {string} attr thuộc tính cần tìm kiếm
+ * @param {string} valueFind giá trị cần tìm kiếm
+ * @returns -1 nếu không tìm thấy, 1 số >= 0 nếu tìm thấy
+ */
+export const findIndexByAttributeInclude = function (
+  arrayFind,
+  attr,
+  valueFind
+) {
+  try {
+    //format bỏ hết khoảng trắng ở đầu cuối, và lowercase nó
+    let valueFindFormat = valueFind.replaceAll(" ", "").toLowerCase();
+
+    if (attr === "") {
+      for (let i = 0; i < arrayFind.length; i++) {
+        let arrayEleFormat = arrayFind[i].replaceAll(" ", "").toLowerCase();
+
+        if (
+          arrayEleFormat.includes(valueFindFormat) ||
+          valueFindFormat.includes(arrayEleFormat)
+        ) {
+          return i;
+        }
+      }
+    } else {
+      for (let i = 0; i < arrayFind.length; i++) {
+        let arrayEleFormat = arrayFind[i][attr]
+          .replaceAll(" ", "")
+          .toLowerCase();
+
+        if (
+          arrayEleFormat.includes(valueFindFormat) ||
+          valueFindFormat.includes(arrayEleFormat)
+        ) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  } catch (error) {
+    console.log("🚀 ~ file: common.js:69 ~ error:", error);
+  }
+};
+
+/**
  * sắp xếp array theo thuộc tính bằng merge sort
  * @author: TTANH (04/07/2023)
  * @param {*} arrayIn array muốn sắp xếp
@@ -143,4 +191,27 @@ export const generateUuid = function () {
  */
 export const isObjectEmpty = function (object) {
   return Object.keys(object).length === 0;
+};
+
+/**
+ * so sánh 2 object
+ * @author: TTANH (07/08/2023)
+ * @param {object} object1
+ * @param {object} object2
+ * @returns true nếu 2 object khác nhau
+ */
+export const compareObject = function (object1, object2) {
+  for (let attr in object1) {
+    if (
+      (object1[attr] == "" || object1[attr] == null) &&
+      (object2[attr] == "" || object2[attr] == null)
+    ) {
+    } else {
+      if (object2[attr] !== object1[attr]) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 };

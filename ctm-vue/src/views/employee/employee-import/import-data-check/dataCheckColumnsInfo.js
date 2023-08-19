@@ -1,7 +1,11 @@
+import MISAResource from "../../../../resource/resource.js";
+import store from "../../../../store/index.js";
+
 export var dataCheckColumnsInfo = [
   {
     id: "ExcelRowIndex",
-    name: "Dòng số",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.lineNumber,
     size: 100,
     textAlign: "center",
     format: "text",
@@ -10,7 +14,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ValidCheck",
-    name: "Tình trạng",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.statusQuo,
     size: 150,
     textAlign: "left",
     format: "valid-check",
@@ -19,7 +24,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ValidateDescription",
-    name: "Chi tiết lỗi",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.errorDetail,
     size: 350,
     textAlign: "left",
     format: "text",
@@ -28,7 +34,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "EmployeeCode",
-    name: "Mã nhân viên",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.employeeCode,
     size: 150,
     textAlign: "left",
     format: "text",
@@ -37,7 +44,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "FullName",
-    name: "Tên nhân viên",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.fullname,
     size: 250,
     textAlign: "left",
     format: "text",
@@ -46,7 +54,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "DepartmentCode",
-    name: "Mã đơn vị",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.departmentCode,
     size: 150,
     textAlign: "left",
     format: "text",
@@ -55,7 +64,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "Gender",
-    name: "Giới tính",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.gender,
     size: 120,
     textAlign: "left",
     format: "gender",
@@ -64,7 +74,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "DateOfBirth",
-    name: "Ngày sinh",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.dateOfBirth,
     size: 150,
     textAlign: "center",
     format: "date",
@@ -73,7 +84,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "IdentityNumber",
-    name: "Số CMND",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.identityNumber,
     size: 200,
     textAlign: "right",
     format: "text",
@@ -82,7 +94,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "IdentityDate",
-    name: "Ngày cấp",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.identityDate,
     size: 150,
     textAlign: "center",
     format: "date",
@@ -91,7 +104,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "IdentityPlace",
-    name: "Nơi cấp",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.identityPlace,
     size: 150,
     textAlign: "left",
     format: "text",
@@ -100,7 +114,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "Position",
-    name: "Chức danh",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.position,
     size: 250,
     textAlign: "left",
     format: "text",
@@ -109,7 +124,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "SupplierCustomerGroup",
-    name: "Nhóm KH, NCC",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.supplierCustomerGroup,
     size: 200,
     textAlign: "left",
     format: "text",
@@ -118,7 +134,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "PayAccount",
-    name: "TK công nợ phải trả",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.payAccount,
     size: 200,
     textAlign: "left",
     format: "text",
@@ -127,7 +144,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ReceiveAccount",
-    name: "TK công nợ phải thu",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.receiveAccount,
     size: 200,
     textAlign: "left",
     format: "text",
@@ -136,7 +154,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "Salary",
-    name: "Lương thỏa thuận",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.salary,
     size: 200,
     textAlign: "right",
     format: "currency",
@@ -145,7 +164,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "SalaryCoefficients",
-    name: "Hệ số lương",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.salaryCoefficients,
     size: 200,
     textAlign: "right",
     format: "text",
@@ -154,7 +174,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "SalaryPaidForInsurance",
-    name: "Lương đóng bảo hiểm",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.salaryPaidForInsurance,
     size: 200,
     textAlign: "right",
     format: "currency",
@@ -163,7 +184,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "PersonalTaxCode",
-    name: "Mã số thuế",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.personalTaxCode,
     size: 150,
     textAlign: "right",
     format: "text",
@@ -172,7 +194,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "TypeOfContract",
-    name: "Loại hợp đồng",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.typeOfContract,
     size: 150,
     textAlign: "left",
     format: "text",
@@ -181,7 +204,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "NumberOfDependents",
-    name: "Số người phụ thuộc",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.numberOfDependents,
     size: 200,
     textAlign: "right",
     format: "text",
@@ -190,7 +214,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "AccountNumber",
-    name: "Số tài khoản",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.accountNumber,
     size: 150,
     textAlign: "right",
     format: "text",
@@ -199,7 +224,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "BankName",
-    name: "Tên ngân hàng",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.bankName,
     size: 250,
     textAlign: "left",
     format: "text",
@@ -208,7 +234,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "BankBranch",
-    name: "Chi nhánh TK ngân hàng",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.bankBranch,
     size: 250,
     textAlign: "left",
     format: "text",
@@ -217,7 +244,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "BankProvince",
-    name: "Tỉnh/TP ngân hàng",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.bankProvince,
     size: 180,
     textAlign: "left",
     format: "text",
@@ -226,7 +254,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ContactAddress",
-    name: "Địa chỉ",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.contactAddress,
     size: 200,
     textAlign: "left",
     format: "text",
@@ -235,7 +264,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ContactPhoneNumber",
-    name: "ĐT di động",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.contactPhoneNumber,
     size: 150,
     textAlign: "right",
     format: "text",
@@ -244,7 +274,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ContactLandlinePhoneNumber",
-    name: "ĐT cố định",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.contactLandlinePhoneNumber,
     size: 150,
     textAlign: "right",
     format: "text",
@@ -253,7 +284,8 @@ export var dataCheckColumnsInfo = [
   },
   {
     id: "ContactEmail",
-    name: "Email",
+    name: MISAResource[store.state.langCode].importExcel.dataCheck
+      .employeeColumnsInfo.contactEmail,
     size: 200,
     textAlign: "left",
     format: "text",

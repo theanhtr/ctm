@@ -6,16 +6,18 @@ namespace MISA.WebFresher052023.CTM.Application
     /// Interface để làm việc với excel
     /// </summary>
     /// CreatedBy: TTANH (16/07/2023)
-    public interface IExcelService<TExcelDto>
+    public interface IExcelService<TExcelDto, TEntityLayoutDto>
     {
         #region Methods
         /// <summary>
         /// Export dữ liệu ra file excel (xlsx)
         /// </summary>
         /// <param name="searchText">Nội dung tìm kiếm</param>
+        /// <param name="titleExport">Tên tiêu đề và tên sheet của file</param>
+        /// <param name="headersInfo">Thông tin của các tiêu đề</param>
         /// <returns>Dữ liệu trong file excel</returns>
         /// CreatedBy: TTANH (16/07/2023)
-        Task<byte[]> ExportToExcelAsync(string? searchText);
+        Task<byte[]> ExportToExcelAsync(string? searchText, string? titleExport, List<TEntityLayoutDto> headersInfo);
 
         /// <summary>
         /// Đọc file excel để lấy dữ liệu cho setting

@@ -2,7 +2,6 @@ C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebF
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\bin\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.dll
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\bin\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.pdb
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.csproj.AssemblyReference.cache
-C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.Resource.ResourceVN.resources
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.csproj.GenerateResource.cache
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.AssemblyInfoInputs.cache
@@ -12,3 +11,7 @@ C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebF
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\refint\MISA.WebFresher052023.CTM.Domain.dll
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.pdb
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\ref\MISA.WebFresher052023.CTM.Domain.dll
+C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\bin\Debug\net6.0\vi\MISA.WebFresher052023.CTM.Domain.resources.dll
+C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.Resource.Resource.resources
+C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.Resource.Resource.vi.resources
+C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain\obj\Debug\net6.0\vi\MISA.WebFresher052023.CTM.Domain.resources.dll

@@ -28,7 +28,7 @@
       :clearable="false"
       :enable-time-picker="false"
       :format="$store.state.formatDate"
-      :day-names="['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']"
+      :day-names="dayNames"
       text-input
       auto-apply
       timezone="Asia/Novosibirsk"
@@ -59,7 +59,12 @@
               style="cursor: pointer"
               @click="openMonthYearSelect"
             >
-              Tháng {{ month + 1 }} Năm {{ year }}
+              {{
+                $t("component.datePicker.monthYearLabel", {
+                  month: month + 1,
+                  year: year,
+                })
+              }}
             </div>
             <div v-else class="month-year--picker">
               <div
@@ -111,7 +116,7 @@
                   class="cancel-select"
                   @click="closeMonthYearSelect(month, year)"
                 >
-                  Hủy bỏ
+                  {{ $t("component.datePicker.cancelSelectMonthYear") }}
                 </div>
               </div>
             </div>
@@ -132,7 +137,7 @@
       <template #action-extra="{ selectCurrentDate }">
         <div
           @click="selectCurrentDate()"
-          title="Chọn ngày hôm nay"
+          :title="$t('component.datePicker.todayTooltip')"
           class="date-picker__current-date"
         >
           <misa-separation-line
@@ -141,7 +146,9 @@
               border-top: 1px solid var(--border-color-default);
             "
           />
-          <div class="current-date__text">Hôm nay</div>
+          <div class="current-date__text">
+            {{ $t("component.datePicker.today") }}
+          </div>
         </div>
       </template>
     </VueDatePicker>
@@ -193,6 +200,16 @@ export default {
   },
   data() {
     return {
+      dayNames: [
+        this.$t("component.datePicker.dayName.monday"),
+        this.$t("component.datePicker.dayName.tuesday"),
+        this.$t("component.datePicker.dayName.wednesday"),
+        this.$t("component.datePicker.dayName.thursday"),
+        this.$t("component.datePicker.dayName.friday"),
+        this.$t("component.datePicker.dayName.saturday"),
+        this.$t("component.datePicker.dayName.sunday"),
+      ],
+
       date: this.modelValue,
       isPickMonthYear: false,
       isPickMonth: false,
@@ -201,51 +218,51 @@ export default {
       monthRange: [
         {
           value: 1,
-          text: "Thg 1",
+          text: this.$t("component.datePicker.monthRange.january"),
         },
         {
           value: 2,
-          text: "Thg 2",
+          text: this.$t("component.datePicker.monthRange.february"),
         },
         {
           value: 3,
-          text: "Thg 3",
+          text: this.$t("component.datePicker.monthRange.march"),
         },
         {
           value: 4,
-          text: "Thg 4",
+          text: this.$t("component.datePicker.monthRange.april"),
         },
         {
           value: 5,
-          text: "Thg 5",
+          text: this.$t("component.datePicker.monthRange.may"),
         },
         {
           value: 6,
-          text: "Thg 6",
+          text: this.$t("component.datePicker.monthRange.june"),
         },
         {
           value: 7,
-          text: "Thg 7",
+          text: this.$t("component.datePicker.monthRange.july"),
         },
         {
           value: 8,
-          text: "Thg 8",
+          text: this.$t("component.datePicker.monthRange.august"),
         },
         {
           value: 9,
-          text: "Thg 9",
+          text: this.$t("component.datePicker.monthRange.september"),
         },
         {
           value: 10,
-          text: "Thg 10",
+          text: this.$t("component.datePicker.monthRange.october"),
         },
         {
           value: 11,
-          text: "Thg 11",
+          text: this.$t("component.datePicker.monthRange.november"),
         },
         {
           value: 12,
-          text: "Thg 12",
+          text: this.$t("component.datePicker.monthRange.december"),
         },
       ],
 
@@ -268,6 +285,14 @@ export default {
     mainInput.tabIndex = this.tabindex;
   },
   methods: {
+    /**
+     * cho dữ liệu ngày đã chọn là trống
+     * @author: TTANH (07/08/2023)
+     */
+    resetDatePicked() {
+      this.date = "";
+    },
+
     /**
      * xử lý sự kiện key down
      * @author: TTANH (29/07/2023)
@@ -526,7 +551,11 @@ export default {
     date(newValue) {
       this.resetPickMonthYear(newValue);
 
-      this.$emit("update:modelValue", newValue.toLocaleString());
+      if (newValue) {
+        this.$emit("update:modelValue", newValue.toLocaleString());
+      } else {
+        this.$emit("update:modelValue", "");
+      }
     },
   },
 };

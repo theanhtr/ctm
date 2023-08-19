@@ -1175,6 +1175,11 @@
         },
         "runtime": {
           "MISA.WebFresher052023.CTM.Domain.dll": {}
+        },
+        "resources": {
+          "vi/MISA.WebFresher052023.CTM.Domain.resources.dll": {
+            "locale": "vi"
+          }
         }
       },
       "MISA.WebFresher052023.CTM.Infrastructure/1.0.0": {

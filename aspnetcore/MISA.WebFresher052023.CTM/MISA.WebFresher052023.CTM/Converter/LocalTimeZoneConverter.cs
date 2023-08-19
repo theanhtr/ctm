@@ -7,7 +7,19 @@ namespace MISA.WebFresher052023.CTM
     {
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return DateTime.Parse(reader.GetString() ?? DateTime.Now.ToString());
+            var valueStr = reader.GetString();
+            var valueStrArray = valueStr.Split("/");
+            
+            if (valueStrArray.Length != 3 )
+            {
+                return DateTime.Parse(valueStr);
+
+            }
+            else
+            {
+                var readerStr = valueStrArray[1] + "/" + valueStrArray[0] + "/" + valueStrArray[2];
+                return DateTime.Parse(readerStr);
+            }
         }
 
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)

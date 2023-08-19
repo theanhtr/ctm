@@ -16,13 +16,18 @@
 .dp__input_wrap::after {
   content: "";
   background: url("../../../assets/img/Sprites.64af8f61.svg") no-repeat;
-  background-position: -128px -312px;
+  background-position: -125px -308px;
   width: 16px;
   height: 16px;
   position: absolute;
-  right: 5px;
-  top: 5px;
+  right: 0.5px;
+  top: 1px;
   cursor: pointer;
+  border-top-right-radius: var(--border-radius-default);
+  border-bottom-right-radius: var(--border-radius-default);
+  box-sizing: content-box;
+  padding: 4px 3px;
+  background-color: transparent;
 }
 
 .dp-custom-input {

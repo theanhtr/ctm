@@ -1,6 +1,8 @@
 <template>
-  <div id="loading-bar-spinner" class="spinner" :class="`spinner-${size}`">
-    <div class="spinner-icon"></div>
+  <div class="m-overlay">
+    <div id="loading-bar-spinner" class="spinner" :class="`spinner-${size}`">
+      <div class="spinner-icon"></div>
+    </div>
   </div>
 </template>
 

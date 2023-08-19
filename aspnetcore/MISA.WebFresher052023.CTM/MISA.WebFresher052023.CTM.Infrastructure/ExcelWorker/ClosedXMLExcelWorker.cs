@@ -10,22 +10,24 @@ using DocumentFormat.OpenXml.VariantTypes;
 
 namespace MISA.WebFresher052023.CTM.Infrastructure
 {
-    public abstract class ClosedXMLExcelWorker<TEntityDto, TEntityExcelDto> : IExcelWorker<TEntityDto, TEntityExcelDto>
+    public abstract class ClosedXMLExcelWorker<TEntityDto, TEntityExcelDto, TEntityLayoutDto> : IExcelWorker<TEntityDto, TEntityExcelDto, TEntityLayoutDto> where TEntityLayoutDto : ILayoutGetInfo
     {
         #region Methods
         /// <summary>
         /// hàm chuyển đổi dữ liệu đầu vào từ entities thành dữ liệu excel
         /// </summary>
-        /// <param name="entities">Các đối tượng cần chuyển</param>
+        /// <param name="entitiesDto">Các đối tượng cần chuyển</param>
+        /// <param name="titleExport">Tên tiêu đề và tên sheet của file</param>
+        /// <param name="headersInfo">Thông tin của các tiêu đề</param>
         /// <returns>Dữ liệu excel</returns>
         /// CreatedBy: TTANH (17/07/2023)
-        public byte[] ConvertDataToExcelData(List<TEntityDto> entitiesDto)
+        public byte[] ConvertDataToExcelData(List<TEntityDto> entitiesDto, string? titleExport, List<TEntityLayoutDto> headersInfo)
         {
             using var workbook = new XLWorkbook();
 
-            var worksheet = workbook.Worksheets.Add("Danh_sach");
+            var worksheet = workbook.Worksheets.Add(titleExport);
 
-            var currentRow = 1;
+            var currentRow = 3;
             var currentColumn = 1;
 
             // thêm tiêu đề
@@ -37,15 +39,25 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                 // đặt tên tiêu đề
                 var propertyName = property.Name;
 
-                if (!propertyName.Contains("Id"))
+                var headerInfo = headersInfo.Where(e => propertyName == e.GetServerColumnName()).FirstOrDefault();
+
+                if (headerInfo != null)
                 {
                     var headerEle = worksheet.Cell(currentRow, currentColumn);
 
-                    headerEle.Value = propertyName;
+                    headerEle.Value = headerInfo.GetClientColumnName(Resource.Lang_Code);
 
                     // tên màu nền và chữ in đậm cho màu nền
                     headerEle.Style.Fill.BackgroundColor = XLColor.FromHtml("#D8D8D8");
                     headerEle.Style.Font.Bold = true;
+                    
+                    // căn giữa
+                    headerEle.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    headerEle.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                    //thêm border
+                    headerEle.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    headerEle.Style.Border.OutsideBorderColor = XLColor.Black;
 
                     currentColumn++;
                 }
@@ -60,15 +72,55 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                 foreach (var property in properties)
                 {
                     var propertyName = property.Name;
+                    var propertyValue = property.GetValue(entity);
 
-                    if (!propertyName.Contains("Id"))
+                    var headerInfo = headersInfo.Where(e => propertyName == e.GetServerColumnName()).FirstOrDefault();
+
+                    var cell = worksheet.Cell(currentRow, currentColumn);
+
+                    if (propertyName.Contains("Gender"))
                     {
-                        var propertyValue = property.GetValue(entity);
+                        var propertyValueStr = propertyValue?.ToString();
 
-                        worksheet.Cell(currentRow, currentColumn).Value = propertyValue?.ToString();
+                        if (propertyValueStr != null)
+                        {
+                            if (propertyValueStr.Contains("Female"))
+                            {
+                                cell.Value = Resource.Gender_Female;
+                            }
+                            else if (propertyValueStr.Contains("Male"))
+                            {
+                                cell.Value = Resource.Gender_Male;
+                            }
+                            else if (propertyValueStr.Contains("Other"))
+                            {
+                                cell.Value = Resource.Gender_Other;
+                            }
+                        }
+                        else
+                        {
+                            cell.Value = "";
+                        }
 
                         currentColumn++;
                     }
+                    else if (propertyName.Contains("Date"))
+                    {
+                        var dateTimeTemp = (DateTime?)propertyValue;
+                        cell.Value = dateTimeTemp?.ToString(AppConst.FormatDate) ?? "";
+
+                        currentColumn++;
+                    }
+                    else if (headerInfo != null)
+                    {
+                        cell.Value = propertyValue?.ToString();
+
+                        currentColumn++;
+                    }
+
+                    //thêm border
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    cell.Style.Border.OutsideBorderColor = XLColor.Black;
                 }
 
                 currentColumn = 1;
@@ -76,6 +128,29 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
 
             // cho chiều rộng cột bằng fit content
             worksheet.Columns().AdjustToContents();
+
+            //thêm tên sheet
+            var lastColumnUsed = worksheet.LastColumnUsed().ColumnNumber();
+            var rangeTitle = worksheet.Range(worksheet.Cell(1, 1), worksheet.Cell(1, lastColumnUsed));
+
+            worksheet.Cell(1, 1).Value = titleExport?.ToUpper();
+
+            rangeTitle.Merge();
+            rangeTitle.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            rangeTitle.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+            rangeTitle.Style.Font.FontSize = 16;
+            rangeTitle.Style.Font.Bold = true;
+
+
+            //tăng chiều cao cho dòng 1: tên sheet và dòng 3: tên cột
+            worksheet.Row(1).Height = 35;
+            worksheet.Row(3).Height = 30;
+
+            var lastRowUsed = worksheet.LastRowUsed().RowNumber();
+            for (var i = 4; i <= lastRowUsed; i++)
+            {
+                worksheet.Row(i).Height = 26;
+            }
 
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
@@ -165,13 +240,12 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
         /// CreatedBy: TTANH (17/07/2023)
         public List<ExcelHeadersInfo> GetHeadersInfo(string filePath, string sheetContainsData, int headerRowIndex)
         {
-            // Fix: xuất ra nam nữ và định dạng ngày tháng
             using var workbook = new XLWorkbook(filePath);
             var worksheet = workbook.Worksheet(sheetContainsData);
 
             if (IsWorksheetEmpty(worksheet))
             {
-                throw new ValidateException(StatusErrorCode.SheetIsEmpty, ResourceVN.Sheet_Is_Empty, null);
+                throw new ValidateException(StatusErrorCode.SheetIsEmpty, Resource.Sheet_Is_Empty, null);
             }
 
             var columnIndex = 1;
@@ -239,7 +313,7 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                     if (propertyInfo != null)
                     {
                         var typeOfProperty = propertyInfo.PropertyType;
-                        
+
                         var cellValueRaw = cell.Value;
 
                         var cellValueString = cell.GetValue<string>();
@@ -248,15 +322,15 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                         {
                             if (propertyInfo.Name == "Gender")
                             {
-                                if (cellValueString.Contains("Nam"))
+                                if (cellValueString.Contains(Resource.Gender_Male))
                                 {
                                     propertyInfo.SetValue(entities[currentEntityIndex], Gender.Male, null);
                                 }
-                                else if (cellValueString.Contains("Nữ"))
+                                else if (cellValueString.Contains(Resource.Gender_Female))
                                 {
                                     propertyInfo.SetValue(entities[currentEntityIndex], Gender.Female, null);
                                 }
-                                else if (cellValueString.Contains("Khác"))
+                                else if (cellValueString.Contains(Resource.Gender_Other))
                                 {
                                     propertyInfo.SetValue(entities[currentEntityIndex], Gender.Other, null);
                                 }
@@ -275,7 +349,7 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                                 }
                                 catch
                                 {
-                                    var messageError = string.Format(ResourceVN.Wrong_Format_Date, AppConst.FormatDate);
+                                    var messageError = string.Format(Resource.Wrong_Format_Date, AppConst.FormatDate);
 
                                     throw new ValidateException(StatusErrorCode.WrongFormatDate, messageError, null);
                                 }
@@ -292,7 +366,7 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                                         cellValueRaw.TryConvert(out booleanValue);
                                         cellValueFormat = booleanValue;
                                     }
-                                    else if(typeOfProperty == typeof(byte) || typeOfProperty == typeof(byte?))
+                                    else if (typeOfProperty == typeof(byte) || typeOfProperty == typeof(byte?))
                                     {
                                         cellValueFormat = cell.GetValue<byte?>();
                                     }
@@ -341,7 +415,7 @@ namespace MISA.WebFresher052023.CTM.Infrastructure
                             }
                             catch
                             {
-                                throw new ValidateException(StatusErrorCode.ExcelHeaderRequiredNotMap, ResourceVN.Excel_Header_Required_Not_Map, null);
+                                throw new ValidateException(StatusErrorCode.ExcelHeaderRequiredNotMap, Resource.Excel_Header_Required_Not_Map, null);
                             }
                         }
                     }

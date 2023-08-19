@@ -9,3 +9,4 @@ giữ shift để chọn nhiều
 ESC: đóng form
 CTRL + S: cất
 CTRL + SHIFT + S: cất và thêm 
+CTRL + 1, 2, 3: mở các form thông tin thêm

@@ -108,3 +108,4 @@ C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebF
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain.Tests\bin\Debug\net6.0\Microsoft.Extensions.Primitives.dll
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain.Tests\bin\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.dll
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain.Tests\bin\Debug\net6.0\MISA.WebFresher052023.CTM.Domain.pdb
+C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Domain.Tests\bin\Debug\net6.0\vi\MISA.WebFresher052023.CTM.Domain.resources.dll

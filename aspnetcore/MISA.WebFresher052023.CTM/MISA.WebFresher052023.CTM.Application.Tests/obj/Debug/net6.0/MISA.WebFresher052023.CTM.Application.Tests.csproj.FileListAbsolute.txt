@@ -111,3 +111,4 @@ C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebF
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Application.Tests\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Application.Tests.pdb
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Application.Tests\obj\Debug\net6.0\MISA.WebFresher052023.CTM.Application.Tests.genruntimeconfig.cache
 C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Application.Tests\obj\Debug\net6.0\ref\MISA.WebFresher052023.CTM.Application.Tests.dll
+C:\Users\thean\OneDrive\Desktop\misa\web202305\mf1666-ttanh\aspnetcore\MISA.WebFresher052023.CTM\MISA.WebFresher052023.CTM.Application.Tests\bin\Debug\net6.0\vi\MISA.WebFresher052023.CTM.Domain.resources.dll

@@ -4,6 +4,7 @@
  */
 const ProjectConfig = {
   ApiConnection: "https://localhost:44323/api/v1/",
+  FormatDate: "dd/MM/yyyy",
 };
 
 /**

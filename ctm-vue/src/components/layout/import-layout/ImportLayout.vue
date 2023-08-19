@@ -2,15 +2,15 @@
   <div class="import-layout">
     <div class="import-header">
       <div class="header-left">
-        <p class="bold-text">Nhập dữ liệu từ Excel</p>
+        <p class="bold-text">{{ $t("importLayout.headerTitle") }}</p>
       </div>
       <div class="header-right">
-        <misa-icon icon="help" title="Giúp (F1)" />
+        <misa-icon icon="help" :title="$t('common.helpIconTooltip')" />
         <misa-icon
           @click="closeImport"
           icon="close"
           style="margin-left: 3px"
-          title="Đóng (ESC)"
+          :title="$t('common.closeIconTooltip')"
         />
       </div>
     </div>

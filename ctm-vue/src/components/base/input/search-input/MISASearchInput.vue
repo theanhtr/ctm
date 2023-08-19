@@ -8,6 +8,7 @@
   >
     <input
       class="search-input__input"
+      v-MISABlackenOut
       :placeholder="placeholder"
       ref="input"
       @focus="
@@ -27,7 +28,7 @@
     <misa-icon
       icon="search"
       scale="0.8"
-      tooltip="Tìm kiếm"
+      :tooltip="$t('common.search')"
       style="position: absolute; top: 0px; right: 10px"
     />
     <misa-tooltip v-if="tooltip !== '' && hoverInput" :error="false">{{
@@ -51,7 +52,7 @@ export default {
       default: "250px",
     },
     placeholder: {
-      default: "Tìm kiếm",
+      default: "",
     },
     modelValue: {
       required: true,
@@ -75,9 +76,7 @@ export default {
         width: this.width,
         minWidth: this.width,
         maxWidth: this.width,
-        border: `${this.focusInput ? "2px" : "1px"} solid ${
-          this.borderInputColor
-        }`,
+        border: `1px solid ${this.borderInputColor}`,
       };
     },
 

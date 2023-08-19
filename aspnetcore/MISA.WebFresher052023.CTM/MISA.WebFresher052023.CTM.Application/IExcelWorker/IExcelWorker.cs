@@ -2,15 +2,17 @@
 
 namespace MISA.WebFresher052023.CTM.Application
 {
-    public interface IExcelWorker<TEntityDto, TEntityExcelDto>
+    public interface IExcelWorker<TEntityDto, TEntityExcelDto, TEntityLayout>
     {
         /// <summary>
         /// hàm chuyển đổi dữ liệu đầu vào từ entities thành dữ liệu excel
         /// </summary>
-        /// <param name="entities">Các đối tượng cần chuyển</param>
+        /// <param name="entitiesDto">Các đối tượng cần chuyển</param>
+        /// <param name="titleExport">Tên tiêu đề và tên sheet của file</param>
+        /// <param name="headersInfo">Thông tin của các tiêu đề</param>
         /// <returns>Dữ liệu excel</returns>
         /// CreatedBy: TTANH (17/07/2023)
-        byte[] ConvertDataToExcelData(List<TEntityDto> entitiesDto);
+        byte[] ConvertDataToExcelData(List<TEntityDto> entitiesDto, string? titleExport, List<TEntityLayout> headersInfo);
 
         /// <summary>
         /// Đọc file excel để lấy dữ liệu cho setting

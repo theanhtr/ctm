@@ -28,11 +28,9 @@
               <div
                 class="m-th__text"
                 :style="{ cursor: !oneRowSelect ? 'pointer' : 'default' }"
+                :title="column.tooltip ?? ''"
               >
                 {{ column.name }}
-              </div>
-              <div v-if="!oneRowSelect" class="m-th__filter">
-                <misa-icon icon="th__filter" height="14px" width="14px" />
               </div>
             </div>
             <div
@@ -46,7 +44,9 @@
           style="text-align: end"
           class="m-table__row-function"
         >
-          <span style="padding-right: 6px">Chức năng</span>
+          <span style="padding-right: 6px">{{
+            $t("component.table.function")
+          }}</span>
         </th>
       </tr>
     </thead>
@@ -82,7 +82,7 @@
           </template>
         </td>
         <td
-          v-for="(column, index) in columnsInfo"
+          v-for="(column, index) in columnsShow"
           :key="column.id"
           :class="`text-align--${column.textAlign}`"
           :title="row[column.id]"
@@ -96,15 +96,17 @@
               v-if="row[column.id] === $_MISAEnum.RECORD_CHECK.VALID"
               style="color: var(--tab__item--active-text-color)"
             >
-              Hợp lệ
+              {{ $t("component.table.valid") }}
             </div>
-            <div v-else style="color: #ff0404">Không hợp lệ</div>
+            <div v-else style="color: #ff0404">
+              {{ $t("component.table.invalid") }}
+            </div>
           </template>
           <template v-else-if="column.format === 'checkbox'">
             <misa-checkbox-input
-              @checked="$emit('checked-row', row.id)"
-              @unchecked="$emit('unchecked-row', row.id)"
-              :isCheck="row.isSelected"
+              @checked="row[column.id] = true"
+              @unchecked="row[column.id] = false"
+              :isCheck="row[column.id]"
               :disable="row.isCannotChangeChecked"
               style="margin: 0 auto"
             />
@@ -147,7 +149,13 @@
               this.rowIsFocus == row.id
                 ? 'var(--grid-body__line-focus-background-color) !important'
                 : '',
+            overflow: 'visible',
           }"
+          @dblclick="
+            (event) => {
+              event.stopPropagation();
+            }
+          "
         >
           <template v-if="rowsData.length === 0">
             <misa-loading-skeleton />
@@ -163,17 +171,19 @@
                   padding: 6px 1px 6px 16px;
                 "
                 @clickBtnContainer="$emit('clickFixBtn', row.id)"
-                >Sửa</misa-button
+                >{{ $t("common.button.edit") }}</misa-button
               >
-              <misa-icon
+
+              <misa-button
+                type="icon"
+                width="auto"
+                height="20px"
+                borderRadius="var(--border-radius-default)"
+                padding="0px"
+                :border="'none'"
                 icon="dropdown--solid-blue"
-                style="height: 100%"
+                :tabindex="-1"
                 @click="clickButtonDropdownFunctionContext($event, row.id)"
-                @dblclick="
-                  (event) => {
-                    event.stopPropagation();
-                  }
-                "
                 :ref="`refDropdownBtn-${row.id}`"
               />
             </div>
@@ -184,7 +194,7 @@
 
     <tbody class="m-table__body--no-data" v-else>
       <img src="../../../assets/img/no_data.png" />
-      <p>Không có dữ liệu</p>
+      <p>{{ $t("component.table.noData") }}</p>
     </tbody>
 
     <div
@@ -193,9 +203,15 @@
       :style="styleFunctionContext"
       ref="refFunctionContext"
     >
-      <div @click="clickDuplicateBtn" class="function__item">Nhân bản</div>
-      <div @click="clickDeleteBtn" class="function__item">Xóa</div>
-      <div class="function__item">Ngừng sử dụng</div>
+      <div @click="clickDuplicateBtn" class="function__item">
+        {{ $t("component.table.editData.copy") }}
+      </div>
+      <div @click="clickDeleteBtn" class="function__item">
+        {{ $t("component.table.editData.delete") }}
+      </div>
+      <div class="function__item">
+        {{ $t("component.table.editData.stopUsing") }}
+      </div>
     </div>
   </table>
 </template>
@@ -237,7 +253,7 @@ export default {
           textAlign: "left", // bao gồm: left, center, right
           format: "text", // bao gồm: text, date, currency,
                           // checkbox, input-combobox, input-text, input-number_no_dot, valid-check
-                          //  + với checkbox thì "có thể" có thêm isSelected và isCannotChangeChecked hoặc không
+                          //  + với checkbox thì "có thể" thêm isCannotChangeChecked để không cho thay đổi checkbox input ở trường đó
                           //  + với input-combobox thì "phải" có thêm comboboxRowData và chỉ có duy nhất một combobox input??
                           //  + với valid-check chỉ chấp nhận _MISAEnum.RECORD_CHECK
           isShow: true,
@@ -357,11 +373,18 @@ export default {
      */
     clickButtonDropdownFunctionContext(event, idFocus) {
       try {
+        let heightButtonTarget = event.currentTarget.offsetHeight;
+        let widthButtonTarget = event.currentTarget.offsetWidth;
+        this.rowIsFocus = idFocus;
+
         if (idFocus !== this.idFunctionContextFocus) {
           //trừ đi kích thước của functionContext
+          event.preventDefault();
           event.stopPropagation();
-          this.leftFunctionContext = event.x - 110 + "px";
-          this.topFunctionContext = event.y + "px";
+          this.leftFunctionContext =
+            event.x + widthButtonTarget - event.layerX - 118 + "px";
+          this.topFunctionContext =
+            event.y + heightButtonTarget - event.layerY + 1 + "px";
           this.isShowFunctionContext = true;
           this.idFunctionContextFocus = idFocus;
 
@@ -402,12 +425,17 @@ export default {
     clickOutSideFunctionContext(event) {
       try {
         if (
-          !this.$refs.refFunctionContext.contains(event.target) &&
-          !this.$refs[`refDropdownBtn-${this.idFunctionContextFocus}`][0]
-            .getIconContainerRef()
-            .contains(event.target)
+          this.$refs.refFunctionContext &&
+          this.$refs[`refDropdownBtn-${this.idFunctionContextFocus}`][0]
         ) {
-          this.closeFunctionContext();
+          if (
+            !this.$refs.refFunctionContext.contains(event.target) &&
+            !this.$refs[`refDropdownBtn-${this.idFunctionContextFocus}`][0]
+              .getBtnContainerRef()
+              .contains(event.target)
+          ) {
+            this.closeFunctionContext();
+          }
         }
       } catch (error) {
         console.log(
@@ -477,7 +505,7 @@ export default {
     mouseMoveResizeColumn(event) {
       try {
         if (this.rowIndexResize !== -1) {
-          const currentColumnReizer = this.columnsInfo[this.rowIndexResize];
+          const currentColumnReizer = this.columnsShow[this.rowIndexResize];
           const currentWidth = currentColumnReizer.size;
 
           let resizeWidth = currentWidth + (event.clientX - this.prevX);
@@ -517,7 +545,7 @@ export default {
 
       if (column.isPin) {
         for (let i = 0; i < index; i++) {
-          countLeft += this.columnsInfo[i].size;
+          countLeft += this.columnsShow[i].size;
         }
       }
 
@@ -526,7 +554,7 @@ export default {
         minWidth: column.size + "px",
         width: column.size + "px",
         left: column.isPin ? countLeft + "px" : "",
-        zIndex: column.isPin ? 3 : "",
+        zIndex: column.isPin ? 5 : "",
       };
     },
 
@@ -544,7 +572,7 @@ export default {
 
       if (column.isPin) {
         for (let i = 0; i < index; i++) {
-          countLeft += this.columnsInfo[i].size;
+          countLeft += this.columnsShow[i].size;
         }
       }
 
@@ -556,6 +584,7 @@ export default {
           this.rowIsFocus == rowId
             ? "var(--grid-body__line-focus-background-color) !important"
             : "",
+        overflow: this.rowIsFocus == rowId ? "visible" : "",
       };
     },
 
@@ -640,27 +669,6 @@ export default {
           {
             id: "loading",
           },
-          {
-            id: "loading",
-          },
-          {
-            id: "loading",
-          },
-          {
-            id: "loading",
-          },
-          {
-            id: "loading",
-          },
-          {
-            id: "loading",
-          },
-          {
-            id: "loading",
-          },
-          {
-            id: "loading",
-          },
         ];
       } else {
         return this.rowsData;
@@ -689,6 +697,13 @@ export default {
       }
 
       return true;
+    },
+  },
+  watch: {
+    rowsData() {
+      if (this.isShowFunctionContext) {
+        this.closeFunctionContext();
+      }
     },
   },
 };

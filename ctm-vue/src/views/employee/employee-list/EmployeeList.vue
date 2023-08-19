@@ -1,7 +1,7 @@
 <template>
   <div class="page">
     <div class="page__header">
-      <div class="page__title">Nhân viên</div>
+      <div class="page__title">{{ $t("employeeSubsystem.title") }}</div>
     </div>
     <misa-button
       type="link"
@@ -22,7 +22,7 @@
           width="16px"
           height="16px"
         ></misa-icon>
-        Tất cả danh mục
+        {{ $t("common.button.allCategory") }}
       </div>
     </misa-button>
     <div class="page__container">

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MISA.WebFresher052023.CTM.Domain;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -14,15 +15,17 @@ namespace MISA.WebFresher052023.CTM.Application
         #region Fields
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IDepartmentRepository _departmentRepository;
+        private readonly IEmployeeLayoutService _employeeLayoutService;
         private readonly IEmployeeValidate _employeeValidate;
         #endregion
 
         #region Constructors
-        public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper, IEmployeeValidate employeeValidate, IDepartmentRepository departmentRepository) : base(employeeRepository, mapper, employeeValidate)
+        public EmployeeService(IEmployeeRepository employeeRepository, IMapper mapper, IEmployeeValidate employeeValidate, IDepartmentRepository departmentRepository, IEmployeeLayoutService employeeLayoutService) : base(employeeRepository, mapper, employeeValidate)
         {
             _employeeRepository = employeeRepository;
             _departmentRepository = departmentRepository;
             _employeeValidate = employeeValidate;
+            _employeeLayoutService = employeeLayoutService;
         }
         #endregion
 
@@ -40,7 +43,7 @@ namespace MISA.WebFresher052023.CTM.Application
 
             if (department == null)
             {
-                var messageError = string.Format(ResourceVN.Department_Not_Exist, departmentCode);
+                var messageError = string.Format(Resource.Department_Not_Exist, departmentCode);
                 throw new ValidateException(StatusErrorCode.NotFoundData, messageError, null);
             }
 
@@ -75,6 +78,44 @@ namespace MISA.WebFresher052023.CTM.Application
         }
 
         /// <summary>
+        /// Kiểm tra độ dài của từng field trong employeeExcel và gán lỗi nếu có
+        /// </summary>
+        /// <param name="employeeExcel">nhân viên trong file excel cần kiểm tra</param>
+        /// <param name="employeeLayouts">mảng lưu trữ thông tin cột</param>
+        /// CreatedBy: TTANH (01/08/2023)
+        public void ValidateLengthExcel(EmployeeExcelDto employeeExcel, List<EmployeeLayoutDto> employeeLayouts)
+        {
+            foreach (var property in employeeExcel.GetType().GetProperties())
+            {
+                var propertyName = property?.Name;
+                var propertyValue = property?.GetValue(employeeExcel);
+
+                if ((propertyName != null) && (propertyValue != null))
+                {
+                    var maxLength = 0;
+
+                    var attribute = property?
+                            .GetCustomAttributes(typeof(StringLengthAttribute), false).Cast<StringLengthAttribute>().SingleOrDefault();
+
+                    if (attribute != null)
+                    {
+                        var propertyLength = propertyValue.ToString().Length;
+                        maxLength = attribute.MaximumLength;
+
+                        if (propertyLength > maxLength)
+                        {
+                            var employeeLayout = employeeLayouts.Where(e => e.ServerColumnName.Contains(propertyName) || propertyName.Contains(e.ServerColumnName)).FirstOrDefault();
+
+                            var messageError = string.Format(Resource.Wrong_Length, employeeLayout.GetClientColumnName(Resource.Lang_Code) ?? propertyName, maxLength);
+
+                            HelperApplication.SetValidateError(messageError, employeeExcel);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Kiểm tra và gán dữ liệu hợp lệ hay không
         /// </summary>
         /// <param name="employeeExcels">Dữ liệu muốn kiểm tra</param>
@@ -87,6 +128,8 @@ namespace MISA.WebFresher052023.CTM.Application
 
             var departmentCodeExists = await _departmentRepository.GetAllWithOneColumnAsync<string>("DepartmentCode");
 
+            var employeeLayouts = await _employeeLayoutService.GetAsync();
+
             // Lưu lại dữ liệu đã duyệt qua
             var employeesCheck = new List<EmployeeExcelDto>();
 
@@ -98,17 +141,17 @@ namespace MISA.WebFresher052023.CTM.Application
                 // Không tìm thấy phòng ban
                 if (!departmentCodeExists.Contains(employeeExcel.DepartmentCode))
                 {
-                    var messageError = string.Format(ResourceVN.Department_Not_Exist, employeeExcel.DepartmentCode);
+                    var messageError = string.Format(Resource.Department_Not_Exist, employeeExcel.DepartmentCode);
 
                     HelperApplication.SetValidateError(messageError, employeeExcel);
                 }
 
-                var regexCode = new Regex(ResourceVN.Code_Regex);
+                var regexCode = new Regex(Resource.Code_Regex);
 
                 // Sai code format
                 if (!regexCode.IsMatch(employeeExcel.EmployeeCode))
                 {
-                    var messageError = string.Format(ResourceVN.Wrong_Format_Code, employeeExcel.EmployeeCode);
+                    var messageError = string.Format(Resource.Wrong_Format_Code, employeeExcel.EmployeeCode);
 
                     HelperApplication.SetValidateError(messageError, employeeExcel);
                 }
@@ -120,18 +163,21 @@ namespace MISA.WebFresher052023.CTM.Application
 
                     if (employeesDuplicate.Count() > 0)
                     {
-                        var messageError = string.Format(ResourceVN.Excel_Row_Duplicate, employeesDuplicate.First().ExcelRowIndex);
+                        var messageError = string.Format(Resource.Excel_Row_Duplicate, employeesDuplicate.First().ExcelRowIndex);
 
                         HelperApplication.SetValidateError(messageError, employeeExcel);
                     }
                 }
+
+                // Chiều dài không đúng
+                ValidateLengthExcel(employeeExcel, employeeLayouts.ToList());
 
                 if (importMode == ImportMode.Add)
                 {
                     // Mã nhân viên đã tồn tại
                     if (employeeCodeExists.Contains(employeeExcel.EmployeeCode))
                     {
-                        var messageError = string.Format(ResourceVN.Employee_Exist, employeeExcel.EmployeeCode);
+                        var messageError = string.Format(Resource.Employee_Exist, employeeExcel.EmployeeCode);
 
                         HelperApplication.SetValidateError(messageError, employeeExcel);
                     }
@@ -308,7 +354,16 @@ namespace MISA.WebFresher052023.CTM.Application
                     }
                     else
                     {
-                        valueFormat = "\'" + propertyInfo.GetValue(employee) + "\'";
+                        var typeOfValueRaw = valueRaw.GetType();
+
+                        if (typeOfValueRaw.Name == "Boolean")
+                        {
+                            valueFormat = valueRaw.ToString();
+                        }
+                        else
+                        {
+                            valueFormat = "\'" + valueRaw + "\'";
+                        }
                     }
                 }
                 else

@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th7 30, 2023 lúc 09:09 AM
--- Phiên bản máy phục vụ: 10.4.28-MariaDB
--- Phiên bản PHP: 8.1.17
+-- Host: 127.0.0.1
+-- Generation Time: Aug 06, 2023 at 12:16 PM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.1.17
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,14 +18,14 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `misa.web202305_mf1666_ttanh`
+-- Database: `misa.web202305_mf1666_ttanh`
 --
 CREATE DATABASE IF NOT EXISTS `misa.web202305_mf1666_ttanh` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `misa.web202305_mf1666_ttanh`;
 
 DELIMITER $$
 --
--- Thủ tục
+-- Procedures
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_AllTable_Count` (IN `tableName` VARCHAR(255))  SQL SECURITY INVOKER COMMENT 'Procedure để đếm số bản ghi trong 1 bảng.' BEGIN
     SET @query = CONCAT('SELECT COUNT(1) FROM ', tableName);
@@ -144,6 +144,55 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Department_Update` (IN `Depart
   WHERE d.DepartmentId = id;
 END$$
 
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_EmployeeLayout_Insert` (IN `EmployeeLayoutId` CHAR(36), IN `ServerColumnName` VARCHAR(255), IN `CreatedDate` DATETIME, IN `CreatedBy` VARCHAR(100), IN `ColumnWidth` INT, IN `ColumnTextAlign` VARCHAR(255), IN `ColumnFormat` VARCHAR(255), IN `ColumnIsShow` TINYINT(1), IN `ColumnIsPin` TINYINT(1), IN `OrderNumber` INT, IN `ColumnIsShowDefault` TINYINT(1), IN `ColumnIsPinDefault` TINYINT(1), IN `ColumnWidthDefault` INT, IN `OrderNumberDefault` INT, IN `viTooltip` VARCHAR(255), IN `viClientColumnName` VARCHAR(255), IN `viClientColumnNameDefault` VARCHAR(255), IN `enTooltip` VARCHAR(255), IN `enClientColumnName` VARCHAR(255), IN `enClientColumnNameDefault` VARCHAR(255))  SQL SECURITY INVOKER COMMENT 'Procedure thêm 1 thông tin cột của nhân viên.' BEGIN
+  INSERT INTO employeelayout (EmployeeLayoutId, ServerColumnName, Tooltip, ColumnWidth, ColumnTextAlign, ColumnFormat, ColumnIsShow, ColumnIsPin, OrderNumber, CreatedDate, CreatedBy, ColumnIsShowDefault, ColumnIsPin, OrderNumberDefault, ColumnWidthDefault, viTooltip, viClientColumnName, viClientColumnNameDefault, enTooltip, enClientColumnName, enClientColumnNameDefault)
+  VALUES (EmployeeLayoutId, ServerColumnName, Tooltip, ColumnWidth, ColumnTextAlign, ColumnFormat, ColumnIsShow, ColumnIsPin, OrderNumber, CreatedDate, CreatedBy, ColumnIsShowDefault, ColumnIsPin, OrderNumberDefault, ColumnWidthDefault, viTooltip, viClientColumnName, viClientColumnNameDefault, enTooltip, enClientColumnName, enClientColumnNameDefault);
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_EmployeeLayout_SetDefault` ()  SQL SECURITY INVOKER COMMENT 'Procedure lấy lại dữ liệu mặc định.' BEGIN
+  UPDATE employeelayout
+  set viClientColumnName = viClientColumnNameDefault,
+      enClientColumnName = enClientColumnNameDefault,
+      ColumnWidth = ColumnWidthDefault,
+      ColumnIsShow = ColumnIsShowDefault,
+      ColumnIsPin = ColumnIsPinDefault,
+      OrderNumber = OrderNumberDefault;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_EmployeeLayout_Update` (IN `ColumnWidth` VARCHAR(255), IN `ModifiedDate` DATETIME, IN `ModifiedBy` VARCHAR(255), IN `id` CHAR(36), IN `ColumnIsShow` TINYINT(1), IN `ColumnIsPin` TINYINT(1), IN `OrderNumber` INT, IN `viClientColumnName` VARCHAR(255), IN `enClientColumnName` VARCHAR(255))  SQL SECURITY INVOKER COMMENT 'Procedure cập nhật thông tin cột của nhân viên.' BEGIN
+  UPDATE employeelayout el 
+  SET el.viClientColumnName = viClientColumnName,
+      el.enClientColumnName = enClientColumnName,
+      el.ColumnWidth = ColumnWidth,
+      el.ColumnIsShow = ColumnIsShow,
+      el.ColumnIsPin = ColumnIsPin,
+      el.OrderNumber = OrderNumber,
+      el.ModifiedDate = ModifiedDate,
+      el.ModifiedBy = ModifiedBy
+  WHERE el.EmployeeLayoutId = id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_EmployeeLayout_UpdateList` (IN `values` MEDIUMTEXT)  SQL SECURITY INVOKER COMMENT 'Procedure cập nhật nhiều bản ghi của employee layout' BEGIN
+    /* Dựa trên cơ chế insert nhưng gặp trùng */
+    SET @columnsInsert = '(EmployeeLayoutId, viClientColumnName, enClientColumnName, ColumnWidth, ColumnIsShow, ColumnIsPin, OrderNumber, ModifiedDate, ModifiedBy)';
+    SET @columnsUpdate = '
+      EmployeeLayoutId=VALUES(EmployeeLayoutId), 
+      viClientColumnName=VALUES(viClientColumnName),
+      enClientColumnName=VALUES(enClientColumnName),
+      ColumnWidth=VALUES(ColumnWidth), 
+      ColumnIsShow=VALUES(ColumnIsShow),
+      ColumnIsPin=VALUES(ColumnIsPin), 
+      OrderNumber=VALUES(OrderNumber), 
+      ModifiedDate=VALUES(ModifiedDate),
+      ModifiedBy=VALUES(ModifiedBy);';
+    SET @query = CONCAT('INSERT INTO employeelayout ', @columnsInsert, ' VALUES ', `values`, ' ON DUPLICATE KEY UPDATE EmployeeLayoutId = VALUES(EmployeeLayoutId),', @columnsUpdate);
+    PREPARE stmt FROM @query;
+    EXECUTE stmt;
+
+    /* giải phóng tài nguyên */
+    DEALLOCATE PREPARE stmt;
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_Filter` (IN `pageSize` INT, IN `pageNumber` INT, IN `searchText` VARCHAR(255))  SQL SECURITY INVOKER COMMENT 'Procedure lọc nhân viên.' BEGIN
   DECLARE startIndex int;
   SET startIndex = (pageNumber - 1) * pageSize;
@@ -169,30 +218,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_Insert` (IN `Employee
   VALUES (EmployeeId, EmployeeCode, FullName, DepartmentId, DepartmentCode, DepartmentName, Gender, DateOfBirth, Position, SupplierCustomerGroup, IdentityNumber, IdentityDate, IdentityPlace, PayAccount, ReceiveAccount, Salary, SalaryCoefficients, SalaryPaidForInsurance, PersonalTaxCode, TypeOfContract, NumberOfDependents, AccountNumber, BankName, BankBranch, BankProvince, ContactAddress, ContactPhoneNumber, ContactLandlinePhoneNumber, ContactEmail, CreatedDate, CreatedBy);
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_InsertList` (IN `values` TEXT)  SQL SECURITY INVOKER COMMENT 'Procedure thêm nhiều bản ghi.' BEGIN
-DECLARE cr_stack_depth_handler INTEGER/*[cr_debug.1]*/;
-DECLARE cr_stack_depth INTEGER DEFAULT cr_debug.ENTER_MODULE2('Proc_Employee_InsertList', 'misa.web202305_mf1666_ttanh', 7, 100637)/*[cr_debug.1]*/;
-    CALL cr_debug.UPDATE_WATCH3('`values`', `values`, 'TEXT', cr_stack_depth)/*[cr_debug.2]*/;
-CALL cr_debug.TRACE(3, 3, 0, 5, 0, cr_stack_depth)/*[cr_debug.2]*/;
-CALL cr_debug.TRACE(4, 4, 4, 523, 0, cr_stack_depth)/*[cr_debug.2]*/;
-SET @columnsInsert = '(EmployeeId, EmployeeCode, FullName, DepartmentId, DepartmentCode, DepartmentName, Gender, DateOfBirth, `Position`, SupplierCustomerGroup, IdentityNumber, IdentityDate, IdentityPlace, PayAccount, ReceiveAccount, Salary, SalaryCoefficients, SalaryPaidForInsurance, PersonalTaxCode, TypeOfContract, NumberOfDependents, AccountNumber, BankName, BankBranch, BankProvince, ContactAddress, ContactPhoneNumber, ContactLandlinePhoneNumber, ContactEmail, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy)';
-CALL cr_debug.UPDATE_WATCH3('@columnsInsert', @columnsInsert, '', cr_stack_depth)/*[cr_debug.1]*/;
-    CALL cr_debug.TRACE(5, 5, 4, 87, 0, cr_stack_depth)/*[cr_debug.2]*/;
-SET @query = CONCAT('INSERT INTO employee ', @columnsInsert, ' VALUES ', `values`);
-CALL cr_debug.UPDATE_WATCH3('@query', @query, '', cr_stack_depth)/*[cr_debug.1]*/;
-CALL cr_debug.UPDATE_WATCH3('@columnsInsert', @columnsInsert, '', cr_stack_depth)/*[cr_debug.1]*/;
-    CALL cr_debug.TRACE(6, 6, 4, 29, 0, cr_stack_depth)/*[cr_debug.2]*/;
-PREPARE stmt FROM @query;
-    CALL cr_debug.TRACE(7, 7, 4, 17, 100, cr_stack_depth)/*[cr_debug.2]*/;
-EXECUTE stmt;
-CALL cr_debug.UPDATE_SYSTEM_CALLS(100)/*[cr_debug.1]*/;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_InsertList` (IN `values` MEDIUMTEXT)  SQL SECURITY INVOKER COMMENT 'Procedure thêm nhiều bản ghi.' BEGIN
+    SET @columnsInsert = '(EmployeeId, EmployeeCode, FullName, DepartmentId, DepartmentCode, DepartmentName, Gender, DateOfBirth, `Position`, SupplierCustomerGroup, IdentityNumber, IdentityDate, IdentityPlace, PayAccount, ReceiveAccount, Salary, SalaryCoefficients, SalaryPaidForInsurance, PersonalTaxCode, TypeOfContract, NumberOfDependents, AccountNumber, BankName, BankBranch, BankProvince, ContactAddress, ContactPhoneNumber, ContactLandlinePhoneNumber, ContactEmail, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy)';
+    SET @query = CONCAT('INSERT INTO employee ', @columnsInsert, ' VALUES ', `values`);
+    PREPARE stmt FROM @query;
+    EXECUTE stmt;
 
     /* giải phóng tài nguyên */
-    CALL cr_debug.TRACE(10, 10, 4, 28, 0, cr_stack_depth)/*[cr_debug.2]*/;
-DEALLOCATE PREPARE stmt;
-CALL cr_debug.TRACE(11, 11, 0, 3, 0, cr_stack_depth)/*[cr_debug.2]*/;
-SET cr_stack_depth = cr_stack_depth - 1/*[cr_debug.2]*/;
-CALL cr_debug.LEAVE_MODULE(cr_stack_depth)/*[cr_debug.2]*/;
+    DEALLOCATE PREPARE stmt;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_NewCode` ()  SQL SECURITY INVOKER COMMENT 'Procedure lấy mã nhân viên mới không trùng.' BEGIN
@@ -212,7 +245,43 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_NewCode` ()  SQL SECU
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_Update` (IN `EmployeeId` CHAR(36), IN `EmployeeCode` VARCHAR(20), IN `FullName` VARCHAR(100), IN `DepartmentId` CHAR(36), IN `DepartmentCode` VARCHAR(20), IN `DepartmentName` VARCHAR(255), IN `Gender` INT(2), IN `DateOfBirth` DATE, IN `Position` VARCHAR(100), IN `SupplierCustomerGroup` VARCHAR(255), IN `IdentityNumber` VARCHAR(25), IN `IdentityDate` DATE, IN `IdentityPlace` VARCHAR(255), IN `PayAccount` VARCHAR(100), IN `ReceiveAccount` VARCHAR(100), IN `Salary` DECIMAL(18,4), IN `SalaryCoefficients` DECIMAL(18,4), IN `SalaryPaidForInsurance` DECIMAL(18,4), IN `PersonalTaxCode` VARCHAR(25), IN `TypeOfContract` VARCHAR(255), IN `NumberOfDependents` INT(10), IN `AccountNumber` VARCHAR(25), IN `BankName` VARCHAR(255), IN `BankBranch` VARCHAR(255), IN `BankProvince` VARCHAR(255), IN `ContactAddress` VARCHAR(255), IN `ContactPhoneNumber` VARCHAR(50), IN `ContactLandlinePhoneNumber` VARCHAR(50), IN `ContactEmail` VARCHAR(100), IN `ModifiedDate` DATETIME, IN `ModifiedBy` VARCHAR(255), IN `id` CHAR(36))  MODIFIES SQL DATA SQL SECURITY INVOKER COMMENT 'Procedure cập nhật thông tin nhân viên.' BEGIN
-  UPDATE employee e
+DECLARE cr_stack_depth_handler INTEGER/*[cr_debug.1]*/;
+DECLARE cr_stack_depth INTEGER DEFAULT cr_debug.ENTER_MODULE2('Proc_Employee_Update', 'misa.web202305_mf1666_ttanh', 7, 100637)/*[cr_debug.1]*/;
+  CALL cr_debug.UPDATE_WATCH3('`EmployeeId`', `EmployeeId`, 'CHAR(36)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`EmployeeCode`', `EmployeeCode`, 'VARCHAR(20)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`FullName`', `FullName`, 'VARCHAR(100)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`DepartmentId`', `DepartmentId`, 'CHAR(36)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`DepartmentCode`', `DepartmentCode`, 'VARCHAR(20)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`DepartmentName`', `DepartmentName`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`Gender`', `Gender`, 'INT(2)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`DateOfBirth`', `DateOfBirth`, 'DATE', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`Position`', `Position`, 'VARCHAR(100)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`SupplierCustomerGroup`', `SupplierCustomerGroup`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`IdentityNumber`', `IdentityNumber`, 'VARCHAR(25)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`IdentityDate`', `IdentityDate`, 'DATE', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`IdentityPlace`', `IdentityPlace`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`PayAccount`', `PayAccount`, 'VARCHAR(100)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ReceiveAccount`', `ReceiveAccount`, 'VARCHAR(100)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`Salary`', `Salary`, 'DECIMAL(18,4)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`SalaryCoefficients`', `SalaryCoefficients`, 'DECIMAL(18,4)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`SalaryPaidForInsurance`', `SalaryPaidForInsurance`, 'DECIMAL(18,4)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`PersonalTaxCode`', `PersonalTaxCode`, 'VARCHAR(25)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`TypeOfContract`', `TypeOfContract`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`NumberOfDependents`', `NumberOfDependents`, 'INT(10)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`AccountNumber`', `AccountNumber`, 'VARCHAR(25)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`BankName`', `BankName`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`BankBranch`', `BankBranch`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`BankProvince`', `BankProvince`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ContactAddress`', `ContactAddress`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ContactPhoneNumber`', `ContactPhoneNumber`, 'VARCHAR(50)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ContactLandlinePhoneNumber`', `ContactLandlinePhoneNumber`, 'VARCHAR(50)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ContactEmail`', `ContactEmail`, 'VARCHAR(100)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ModifiedDate`', `ModifiedDate`, 'DATETIME', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`ModifiedBy`', `ModifiedBy`, 'VARCHAR(255)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.UPDATE_WATCH3('`id`', `id`, 'CHAR(36)', cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.TRACE(4, 4, 0, 5, 0, cr_stack_depth)/*[cr_debug.2]*/;
+CALL cr_debug.TRACE(5, 36, 2, 26, 104, cr_stack_depth)/*[cr_debug.2]*/;
+UPDATE employee e
   SET e.EmployeeCode = EmployeeCode,
     e.FullName = FullName,
     e.DepartmentId = DepartmentId,
@@ -244,9 +313,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_Update` (IN `Employee
     e.ModifiedDate = ModifiedDate,
     e.ModifiedBy = ModifiedBy
   WHERE e.EmployeeId = id;
+CALL cr_debug.UPDATE_SYSTEM_CALLS(104)/*[cr_debug.1]*/;
+CALL cr_debug.TRACE(37, 37, 0, 3, 0, cr_stack_depth)/*[cr_debug.2]*/;
+SET cr_stack_depth = cr_stack_depth - 1/*[cr_debug.2]*/;
+CALL cr_debug.LEAVE_MODULE(cr_stack_depth)/*[cr_debug.2]*/;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_UpdateList` (IN `values` TEXT)  SQL SECURITY INVOKER COMMENT 'Procedure cập nhật nhiều bản ghi.' BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `Proc_Employee_UpdateList` (IN `values` MEDIUMTEXT)  SQL SECURITY INVOKER COMMENT 'Procedure cập nhật nhiều bản ghi.' BEGIN
     /* Dựa trên cơ chế insert nhưng gặp trùng */
     SET @columnsInsert = '(EmployeeCode, FullName, DepartmentId, DepartmentCode, DepartmentName, Gender, DateOfBirth, `Position`, SupplierCustomerGroup, IdentityNumber, IdentityDate, IdentityPlace, PayAccount, ReceiveAccount, Salary, SalaryCoefficients, SalaryPaidForInsurance, PersonalTaxCode, TypeOfContract, NumberOfDependents, AccountNumber, BankName, BankBranch, BankProvince, ContactAddress, ContactPhoneNumber, ContactLandlinePhoneNumber, ContactEmail, ModifiedDate, ModifiedBy)';
     SET @columnsUpdate = '
@@ -292,7 +365,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `department`
+-- Table structure for table `department`
 --
 
 CREATE TABLE `department` (
@@ -306,20 +379,19 @@ CREATE TABLE `department` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Thông tin phòng ban';
 
 --
--- Đang đổ dữ liệu cho bảng `department`
+-- Dumping data for table `department`
 --
 
 INSERT INTO `department` (`DepartmentId`, `DepartmentCode`, `DepartmentName`, `CreatedDate`, `CreatedBy`, `ModifiedDate`, `ModifiedBy`) VALUES
 ('142cb08f-7c31-21fa-8e90-67245e8b283e', 'PB-0460', 'Phòng nhân sự', '1970-01-01 00:07:13', 'Letha Bolt', '1970-01-01 00:00:04', 'Abraham Acevedo'),
 ('17120d02-6ab5-3e43-18cb-66948daf6128', 'PB-9483', 'Phòng đào tạo', '2001-10-05 03:39:34', 'Miyoko Mckinney', '1971-05-16 09:45:54', 'Hong Beaudoin'),
 ('469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', '2019-06-30 12:29:53', 'Vanita Kelleher', '1975-01-31 18:53:18', 'Retta Lord'),
-('4e272fc4-7875-78d6-7d32-6a1673ffca7c', 'PB-2675', 'Phòng hành chính', '2015-02-25 11:35:34', 'Marcos Abraham', '1970-01-01 00:00:08', 'Treena Lind'),
-('80de23af-ea3d-45cf-bc91-bfa0ef4e3677', 'CHange-1', 'Sửa phòng ban', '2023-07-16 16:45:18', 'TTANH', '2023-07-16 16:46:07', 'ANHTT');
+('4e272fc4-7875-78d6-7d32-6a1673ffca7c', 'PB-2675', 'Phòng hành chính', '2015-02-25 11:35:34', 'Marcos Abraham', '1970-01-01 00:00:08', 'Treena Lind');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `employee`
+-- Table structure for table `employee`
 --
 
 CREATE TABLE `employee` (
@@ -358,188 +430,74 @@ CREATE TABLE `employee` (
   `ModifiedBy` varchar(100) DEFAULT NULL COMMENT 'Người sửa'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Thông tin nhân viên';
 
---
--- Đang đổ dữ liệu cho bảng `employee`
---
-
-INSERT INTO `employee` (`EmployeeId`, `EmployeeCode`, `FullName`, `DepartmentId`, `DepartmentCode`, `DepartmentName`, `Gender`, `DateOfBirth`, `Position`, `SupplierCustomerGroup`, `IdentityNumber`, `IdentityDate`, `IdentityPlace`, `PayAccount`, `ReceiveAccount`, `Salary`, `SalaryCoefficients`, `SalaryPaidForInsurance`, `PersonalTaxCode`, `TypeOfContract`, `NumberOfDependents`, `AccountNumber`, `BankName`, `BankBranch`, `BankProvince`, `ContactAddress`, `ContactPhoneNumber`, `ContactLandlinePhoneNumber`, `ContactEmail`, `CreatedDate`, `CreatedBy`, `ModifiedDate`, `ModifiedBy`) VALUES
-('049769a1-21fc-47c8-8ca6-2cc2958c3434', 'NV-1007', 'Shaughn Eilers', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2022-11-21', 'Nhân viên Update', NULL, NULL, NULL, NULL, NULL, NULL, 15000000.0000, 2.0000, 9500000.0000, '8695235611', 'Cư trú và có HĐLĐ từ 3 th', 1, '545112151', 'Ngân hàng Techcombank', 'Thanh Hóa', 'Thanh Hóa', '3197 Spenser Way', NULL, NULL, 'seilers1@nymag.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('04b3eb7b-6c5f-4388-a160-b39a33243839', 'NV-1143', 'Menard Brazil', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-05', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000035.0000, 36.0000, 4725035.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 35, '25446', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '66890 Red Cloud Crossing', NULL, NULL, 'mbrazil11@desdev.cn', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('057ff569-f105-4d2b-ab35-ed3c6c8c4b9f', 'NV-1130', 'Honey Putson', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000022.0000, 23.0000, 4725022.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 22, '25433', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '39 Mendota Park', NULL, NULL, 'hputsono@uiuc.edu', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('06de0d84-b549-45cc-b935-b88db96ab63e', 'NV-1019', 'Concettina Tudball', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000011.0000, 12.0000, 4725011.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 11, '25422', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '921 Elgar Alley', NULL, NULL, 'ctudballd@baidu.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('0a20c785-c30a-4d2a-a5ca-4dd2137fd9fa', 'NV-1120', 'Bogart Larvor', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-19', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000012.0000, 13.0000, 4725012.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 12, '25423', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '471 Garrison Trail', NULL, NULL, 'blarvore@github.io', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('126b6cf0-7bb8-4089-90d6-c1edc8768d82', 'NV-1055', 'Magnum Fibben', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-04-23', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000047.0000, 48.0000, 4725047.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 47, '25458', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '87193 Maywood Parkway', NULL, NULL, 'mfibben1d@sphinn.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('13f3fba6-fb2a-4d36-b6cf-3d5a70370293', 'NV-1118', 'Gunner Christmas', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000010.0000, 11.0000, 4725010.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 10, '25421', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4571 Kenwood Pass', NULL, NULL, 'gchristmasc@mayoclinic.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('140229cd-f427-4bb8-8cf2-cf30426f3e2f', 'AB2-1001', 'Menard Brazil', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-05', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000035.0000, 36.0000, 4725035.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 35, '25446', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '66890 Red Cloud Crossing', NULL, NULL, 'mbrazil11@desdev.cn', '2023-07-28 20:45:24', 'USER ADD', NULL, NULL),
-('1cff4295-51fe-4aaa-8d33-37a71acb01f6', 'NV-1148', 'Sandro Holworth', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-12-03', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000040.0000, 41.0000, 4725040.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 40, '25451', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '06927 Veith Plaza', NULL, NULL, 'sholworth16@list-manage.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('1e0b41bf-ee6c-4e60-8f94-ada98ac643f5', 'AB2-1003', 'fàd', '142cb08f-7c31-21fa-8e90-67245e8b283e', 'PB-0460', 'Phòng nhân sự', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-07-29 10:04:22', 'USER ADD', NULL, NULL),
-('1e6d50e2-2560-472f-8f6c-0dee221dbea9', 'NV-1037', 'Sonya Gabbot', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-09-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000029.0000, 30.0000, 4725029.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 29, '25440', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '187 Acker Street', NULL, NULL, 'sgabbotv@usgs.gov', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('1eebcf4d-fec1-4363-8eb9-af4d2677cd27', 'NV-1027', 'Taylor Triswell', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-07-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000019.0000, 20.0000, 4725019.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 19, '25430', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '1 Morningstar Terrace', NULL, NULL, 'ttriswelll@hud.gov', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('1f2d11f7-3d59-453e-826e-a81b74e40fd6', 'NV-1137', 'Sonya Gabbot', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-09-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000029.0000, 30.0000, 4725029.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 29, '25440', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '187 Acker Street', NULL, NULL, 'sgabbotv@usgs.gov', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('2323841c-761e-4000-9236-9d52072c26fa', 'AB2-1004', 'fád', '142cb08f-7c31-21fa-8e90-67245e8b283e', 'PB-0460', 'Phòng nhân sự', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '0912945494', NULL, 'theann090602@gmail.com', '2023-07-29 11:51:41', 'USER ADD', NULL, NULL),
-('255fc2bd-8f42-424b-a9da-42b3459acc9d', 'NV-1047', 'Mariann Axe', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-09-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000039.0000, 40.0000, 4725039.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 39, '25450', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '93835 Melody Avenue', NULL, NULL, 'maxe15@123-reg.co.uk', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('2c591863-b299-41ec-a318-02127def7fb3', 'NV-1016', 'Rosie Harriskine', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-05-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000008.0000, 9.0000, 4725008.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 8, '25419', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '3180 Union Terrace', NULL, NULL, 'rharriskinea@ft.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('2d6756d9-f989-440e-9a71-d0cce04fe4c9', 'NV-1111', 'Karol Jacqueminot', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-02-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000003.0000, 4.0000, 4725003.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 3, '25414', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '3 Westend Way', NULL, NULL, 'kjacqueminot5@merriam-webster.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('2dca39cb-dbdd-410e-9a63-be3e7bb430de', 'NV-1355', 'Magnum Fibben', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-04-23', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000047.0000, 48.0000, 4725047.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 47, '25458', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '87193 Maywood Parkway', NULL, NULL, 'mfibben1d@sphinn.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('2ec8542e-d649-4223-b7fb-588eec023cdd', 'NV-1344', 'Stevy Canas', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-11-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000036.0000, 37.0000, 4725036.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 36, '25447', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8114 Elmside Crossing', NULL, NULL, 'scanas12@theglobeandmail.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('3189d13d-cb88-4e54-b663-6ea31a0cc61e', 'NV-1034', 'Orly Neeves', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-05-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000026.0000, 27.0000, 4725026.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 26, '25437', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4 Mitchell Road', NULL, NULL, 'oneevess@bbc.co.uk', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('322a352c-a005-49df-aaff-8fabc2c033ff', 'NV-1150', 'Kalie Jellico', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-06-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000042.0000, 43.0000, 4725042.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 42, '25453', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7 Sullivan Court', NULL, NULL, 'kjellico18@umn.edu', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('32b3daa8-ee3d-4c2d-a877-157ad97234c1', 'NV-1326', 'Lizabeth Valentino', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-23', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000018.0000, 19.0000, 4725018.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 18, '25429', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '40 Gulseth Alley', NULL, NULL, 'lvalentinok@oaic.gov.au', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('334a1b55-7c1f-416d-86c0-a1415c7ac1b9', 'NV-1122', 'Kassie Benion', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-02-08', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000014.0000, 15.0000, 4725014.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 14, '25425', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '147 Mifflin Junction', NULL, NULL, 'kbeniong@youku.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('3764058c-89df-4c73-95a9-b02ddeb5347b', 'NV-1121', 'Hermia Father', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-22', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000013.0000, 14.0000, 4725013.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 13, '25424', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '200 Cherokee Alley', NULL, NULL, 'hfatherf@ebay.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('37d40f31-b406-4ad0-9bf7-33b0f71511bd', 'NV-1107', 'Shaughn Eilers', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2022-11-21', 'Nhân viên Update', NULL, NULL, NULL, NULL, NULL, NULL, 15000000.0000, 2.0000, 9500000.0000, '8695235611', 'Cư trú và có HĐLĐ từ 3 th', 1, '545112151', 'Ngân hàng Techcombank', 'Thanh Hóa', 'Thanh Hóa', '3197 Spenser Way', NULL, NULL, 'seilers1@nymag.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('38133cb7-96d7-407a-a222-6920e63eee02', 'NV-1045', 'Adolph Tather', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-22', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000037.0000, 38.0000, 4725037.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 37, '25448', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '19701 Fair Oaks Crossing', NULL, NULL, 'atather13@nytimes.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('39c16212-c1b6-423c-8165-529dfee26bd8', 'NV-1112', 'Alberto Cawthra', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000004.0000, 5.0000, 4725004.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 4, '25415', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '5 Stuart Terrace', NULL, NULL, 'acawthra6@disqus.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('3a5587e6-dc61-40a6-b5c9-3673e5f7eb3d', 'NV-1145', 'Adolph Tather', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-22', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000037.0000, 38.0000, 4725037.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 37, '25448', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '19701 Fair Oaks Crossing', NULL, NULL, 'atather13@nytimes.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('3bfbce56-499c-4b6d-bdee-c7fb1d2f6367', 'NV-1354', 'Julie Crommett', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000046.0000, 47.0000, 4725046.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 46, '25457', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4178 Dovetail Street', NULL, NULL, 'jcrommett1c@furl.net', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('417fce63-ae6a-4025-bbf3-ffc77fc41ed0', 'NV-1049', 'Caleb Nerger', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-12-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000041.0000, 42.0000, 4725041.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 41, '25452', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7 Hintze Hill', NULL, NULL, 'cnerger17@oaic.gov.au', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('42203310-5606-43ec-82c1-3cff5cfff20a', 'NV-1042', 'Francklyn Sivier', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-12', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000034.0000, 35.0000, 4725034.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 34, '25445', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '6569 Mosinee Court', NULL, NULL, 'fsivier10@skyrock.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('42b320ca-46d2-4df2-8137-12e199f0e6a9', 'NV-1342', 'Francklyn Sivier', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-12', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000034.0000, 35.0000, 4725034.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 34, '25445', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '6569 Mosinee Court', NULL, NULL, 'fsivier10@skyrock.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('4417303d-e5b9-476c-9b2e-150f8f67273c', 'NV-1022', 'Kassie Benion', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-02-08', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000014.0000, 15.0000, 4725014.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 14, '25425', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '147 Mifflin Junction', NULL, NULL, 'kbeniong@youku.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('44894741-73f2-4d6c-a4a3-51b8a752b6b5', 'NV-1125', 'Obadias Holtham', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-28', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000017.0000, 18.0000, 4725017.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 17, '25428', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '94782 6th Parkway', NULL, NULL, 'oholthamj@vimeo.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('44e963b3-3680-4182-bfcf-43a35c8af080', 'NV-1314', 'Arvie Pilcher', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-01-27', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000006.0000, 7.0000, 4725006.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 6, '25417', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '276 Ludington Court', NULL, NULL, 'apilcher8@nature.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('4558f3f8-0485-4767-9540-07f05a801ef1', 'NV-1006', 'Richmond Tildesley', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2022-10-22', 'Giám đốc Update', NULL, NULL, NULL, NULL, NULL, NULL, 30000000.0000, 3.0000, 14250000.0000, '7859865265', 'Cư trú và có HĐLĐ từ 3 th', 2, '8715545', 'Ngân hàng TMCP Quân đội', 'Trần Duy Hưng', 'Hà Nội', '941 Mccormick Trail', NULL, NULL, 'rtildesley0@clickbank.net', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('474f32e5-6515-4fad-8ad2-e791fa8cb141', 'NV-1050', 'Kalie Jellico', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-06-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000042.0000, 43.0000, 4725042.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 42, '25453', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7 Sullivan Court', NULL, NULL, 'kjellico18@umn.edu', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('484af122-7f12-450d-8622-76f37273a11f', 'NV-1134', 'Orly Neeves', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-05-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000026.0000, 27.0000, 4725026.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 26, '25437', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4 Mitchell Road', NULL, NULL, 'oneevess@bbc.co.uk', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('4961acee-5650-43a1-ba8f-5dc38ca6b0de', 'NV-1330', 'Honey Putson', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000022.0000, 23.0000, 4725022.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 22, '25433', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '39 Mendota Park', NULL, NULL, 'hputsono@uiuc.edu', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('4b8b5c12-5f14-4d81-9258-9d28cd8a96ec', 'NV-1014', 'Arvie Pilcher', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-01-27', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000006.0000, 7.0000, 4725006.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 6, '25417', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '276 Ludington Court', NULL, NULL, 'apilcher8@nature.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('4c289afd-552e-4c7f-8376-251b57de50bd', 'NV-1051', 'Lenci Fifield', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-02-07', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000043.0000, 44.0000, 4725043.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 43, '25454', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '59 Nevada Point', NULL, NULL, 'lfifield19@netlog.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('4c7cabb4-83c4-4223-adf5-4b3f2580b575', 'NV-1142', 'Francklyn Sivier', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-12', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000034.0000, 35.0000, 4725034.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 34, '25445', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '6569 Mosinee Court', NULL, NULL, 'fsivier10@skyrock.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('4ee38c7e-8b80-4728-8ad7-1962984e3012', 'NV-1317', 'Terry Locock', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-04-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000009.0000, 10.0000, 4725009.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 9, '25420', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '77 Bonner Junction', NULL, NULL, 'tlocockb@mlb.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('4fff61c9-1d49-4dc4-9828-f2912d8608c4', 'NV-1349', 'Caleb Nerger', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-12-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000041.0000, 42.0000, 4725041.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 41, '25452', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7 Hintze Hill', NULL, NULL, 'cnerger17@oaic.gov.au', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('513e114f-f1c3-4867-b36a-cf4761bc6225', 'NV-1023', 'Burtie Beddoes', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-03-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000015.0000, 16.0000, 4725015.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 15, '25426', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '1 Monterey Park', NULL, NULL, 'bbeddoesh@phpbb.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('53b4cb2d-6ab2-43cc-b1d3-3e805ceab754', 'NV-1116', 'Rosie Harriskine', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-05-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000008.0000, 9.0000, 4725008.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 8, '25419', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '3180 Union Terrace', NULL, NULL, 'rharriskinea@ft.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('54f407ca-b713-40b6-88cd-ff0583a7a814', 'NV-1313', 'Rubin Leydon', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-01-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000005.0000, 6.0000, 4725005.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 5, '25416', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '6770 Reinke Alley', NULL, NULL, 'rleydon7@ebay.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('5701231d-9f64-419a-be51-1290ae73c8ea', 'NV-1039', 'Jake Lanbertoni', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-10-14', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000031.0000, 32.0000, 4725031.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 31, '25442', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '32734 Cambridge Parkway', NULL, NULL, 'jlanbertonix@unesco.org', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('599ab9a2-b4d9-44e1-9ab8-ba7b473fafb9', 'NV-1133', 'Orel Bodman', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-11-12', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000025.0000, 26.0000, 4725025.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 25, '25436', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '16 Bunker Hill Lane', NULL, NULL, 'obodmanr@printfriendly.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('5c484836-d65b-4b95-8a23-f442f4039c68', 'NV-1149', 'Caleb Nerger', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-12-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000041.0000, 42.0000, 4725041.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 41, '25452', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7 Hintze Hill', NULL, NULL, 'cnerger17@oaic.gov.au', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('5d205d25-652a-4650-92c2-df2cc533fd66', 'NV-1139', 'Jake Lanbertoni', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-10-14', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000031.0000, 32.0000, 4725031.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 31, '25442', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '32734 Cambridge Parkway', NULL, NULL, 'jlanbertonix@unesco.org', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('63804d38-3295-4e9f-9a23-39a0e8d03457', 'NV-1157', 'Thêm mới 1', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2023-04-10', 'nhân viên', NULL, '036202012169', '2023-01-22', 'Nam Định', NULL, NULL, 12000048.0000, 49.0000, 4725048.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 48, '25459', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', 'Xuân Hòa, Xuân Trường, Nam Định', '912945494', '946020547', 'trtheanh.work@gmail.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('6801fb02-d8c9-439c-b496-2ae64d3dc40a', 'NV-1043', 'Menard Brazil', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-05', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000035.0000, 36.0000, 4725035.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 35, '25446', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '66890 Red Cloud Crossing', NULL, NULL, 'mbrazil11@desdev.cn', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('6c6172ce-0a31-49ec-b8e0-8cff72cfb88b', 'AB2-1006', 'fja', '17120d02-6ab5-3e43-18cb-66948daf6128', 'PB-9483', 'Phòng đào tạo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-07-29 13:45:20', 'USER ADD', NULL, NULL),
-('6dcff11c-a5aa-4ed9-8fed-12255b8f893d', 'NV-1347', 'Mariann Axe', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-09-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000039.0000, 40.0000, 4725039.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 39, '25450', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '93835 Melody Avenue', NULL, NULL, 'maxe15@123-reg.co.uk', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('71d4a489-702c-4361-b0da-72f25a28b280', 'NV-1147', 'Mariann Axe', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-09-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000039.0000, 40.0000, 4725039.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 39, '25450', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '93835 Melody Avenue', NULL, NULL, 'maxe15@123-reg.co.uk', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('7266b2bc-ff10-49b6-bee9-d135b70dff72', 'NV-1156', 'Trần Thế Anh', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2023-04-10', 'Chủ tịch hội đồng quản trị', NULL, '036202012169', '2023-01-22', 'Nam Định', NULL, NULL, 12000048.0000, 49.0000, 4725048.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 48, '25459', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', 'Xuân Hòa, Xuân Trường, Nam Định', '912945494', '946020547', 'trtheanh.work@gmail.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('742e5b09-dbca-4dec-8029-489164a7c149', 'NV-1144', 'Stevy Canas', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-11-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000036.0000, 37.0000, 4725036.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 36, '25447', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8114 Elmside Crossing', NULL, NULL, 'scanas12@theglobeandmail.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('77ff67b4-20be-434e-8a2e-c9c03efe37fd', 'NV-1128', 'Glenine Wrightim', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-09-14', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000020.0000, 21.0000, 4725020.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 20, '25431', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '10431 Derek Terrace', NULL, NULL, 'gwrightimm@list-manage.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('793164b2-9cb1-460e-a9d7-498cb8af9c6c', 'NV-1348', 'Sandro Holworth', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-12-03', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000040.0000, 41.0000, 4725040.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 40, '25451', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '06927 Veith Plaza', NULL, NULL, 'sholworth16@list-manage.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('796ce928-5e36-4ba8-9435-eea3a0b1d31f', 'NV-1306', 'Richmond Tildesley', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2022-10-22', 'Giám đốc Update', NULL, NULL, NULL, NULL, NULL, NULL, 30000000.0000, 3.0000, 14250000.0000, '7859865265', 'Cư trú và có HĐLĐ từ 3 tháng trở lên', 2, '8715545', 'Ngân hàng TMCP Quân đội', 'Trần Duy Hưng', 'Hà Nội', '941 Mccormick Trail', NULL, NULL, 'rtildesley0@clickbank.net', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('7ab9fa12-98cf-4ac7-a1b2-48244bdad1a4', 'NV-1026', 'Lizabeth Valentino', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-23', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000018.0000, 19.0000, 4725018.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 18, '25429', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '40 Gulseth Alley', NULL, NULL, 'lvalentinok@oaic.gov.au', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('7b7c7c1d-876f-4341-bca5-b1c3bac5a0e0', 'NV-1106', 'Richmond Tildesley', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2022-10-22', 'Giám đốc Update', NULL, NULL, NULL, NULL, NULL, NULL, 30000000.0000, 3.0000, 14250000.0000, '7859865265', 'Cư trú và có HĐLĐ từ 3 th', 2, '8715545', 'Ngân hàng TMCP Quân đội', 'Trần Duy Hưng', 'Hà Nội', '941 Mccormick Trail', NULL, NULL, 'rtildesley0@clickbank.net', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('7d109969-a165-4372-9ffb-83c3474afb8d', 'NV-1321', 'Hermia Father', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-22', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000013.0000, 14.0000, 4725013.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 13, '25424', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '200 Cherokee Alley', NULL, NULL, 'hfatherf@ebay.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('8154e004-f55d-48aa-9046-55ef9f6c84ba', 'NV-1114', 'Arvie Pilcher', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-01-27', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000006.0000, 7.0000, 4725006.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 6, '25417', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '276 Ludington Court', NULL, NULL, 'apilcher8@nature.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('84293717-51e9-4d60-98bf-fe18c88bff25', 'NV-1035', 'Rochette Luttger', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-03-26', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000027.0000, 28.0000, 4725027.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 27, '25438', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4 Claremont Place', NULL, NULL, 'rluttgert@bloomberg.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('855b6ec6-7512-459a-b8ea-97b06cb7c2cb', 'NV-1036', 'Heloise Hinz', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-11', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000028.0000, 29.0000, 4725028.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 28, '25439', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8882 Boyd Court', NULL, NULL, 'hhinzu@hud.gov', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('87ca39ea-cf1d-42b5-865b-1c1faaf86b92', 'NV-1325', 'Obadias Holtham', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-28', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000017.0000, 18.0000, 4725017.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 17, '25428', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '94782 6th Parkway', NULL, NULL, 'oholthamj@vimeo.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('8885cb47-3af9-4aae-bd16-4d97446c3f56', 'NV-1113', 'Rubin Leydon', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-01-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000005.0000, 6.0000, 4725005.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 5, '25416', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '6770 Reinke Alley', NULL, NULL, 'rleydon7@ebay.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('88febafc-d398-41c4-86bf-4d682dc70780', 'NV-1041', 'Nicola Glassborow', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-03-06', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000033.0000, 34.0000, 4725033.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 33, '25444', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8621 Dorton Terrace', NULL, NULL, 'nglassborowz@tripadvisor.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('8978aa05-a6c2-4968-bd35-3714c032b8db', 'NV-1124', 'Denys Baxendale', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-06-09', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000016.0000, 17.0000, 4725016.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 16, '25427', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '0280 Lunder Road', NULL, NULL, 'dbaxendalei@wikia.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('8fbf00c4-2947-4315-b970-08bba7f26eb3', 'AB2-1002', 'Thế Anh', '17120d02-6ab5-3e43-18cb-66948daf6128', 'PB-9483', 'Phòng đào tạo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-07-28 20:46:51', 'USER ADD', NULL, NULL),
-('8fdd5158-fbd1-422b-9e55-31c59386f229', 'NV-1357', 'Trần Thế Anh', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2002-06-09', 'Quản lý dự án', NULL, '036202012169', '2022-01-22', 'nam định', NULL, NULL, 10000.0000, 1.0000, 1.0000, '1', '1', 1, '1', '1', '1', '1', 'hà nội', '0912945494', '0912945494', 'theanh090602@gmail.com', '2023-07-30 12:26:23', 'USER ADD', NULL, NULL),
-('91da0954-59a6-4ab0-9a77-e2a84c0a466c', 'NV-1018', 'Gunner Christmas', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000010.0000, 11.0000, 4725010.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 10, '25421', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4571 Kenwood Pass', NULL, NULL, 'gchristmasc@mayoclinic.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('9277f28f-d9a2-438b-993c-2d195f6b683e', 'NV-1024', 'Denys Baxendale', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-06-09', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000016.0000, 17.0000, 4725016.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 16, '25427', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '0280 Lunder Road', NULL, NULL, 'dbaxendalei@wikia.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('95abf459-d0b1-44c2-ad9f-7fecdf43dffd', 'NV-1020', 'Bogart Larvor', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-19', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000012.0000, 13.0000, 4725012.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 12, '25423', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '471 Garrison Trail', NULL, NULL, 'blarvore@github.io', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('9608016b-4317-4672-8f1e-42e562b2b975', 'NV-1328', 'Glenine Wrightim', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-09-14', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000020.0000, 21.0000, 4725020.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 20, '25431', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '10431 Derek Terrace', NULL, NULL, 'gwrightimm@list-manage.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('972f2893-1a09-435a-b705-9fa3886af9d3', 'NV-1320', 'Bogart Larvor', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-19', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000012.0000, 13.0000, 4725012.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 12, '25423', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '471 Garrison Trail', NULL, NULL, 'blarvore@github.io', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('97a10dc1-7277-4022-8ce3-48ec06d43393', 'NV-1031', 'Arlina Dalgety', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-01-31', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000023.0000, 24.0000, 4725023.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 23, '25434', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8634 Porter Place', NULL, NULL, 'adalgetyp@instagram.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('9ada3535-07db-407f-b4f7-fb102cc23128', 'NV-1021', 'Hermia Father', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-22', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000013.0000, 14.0000, 4725013.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 13, '25424', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '200 Cherokee Alley', NULL, NULL, 'hfatherf@ebay.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('9ca83fd3-3469-4d82-a7bc-65de2dbaa493', 'NV-1351', 'Lenci Fifield', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-02-07', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000043.0000, 44.0000, 4725043.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 43, '25454', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '59 Nevada Point', NULL, NULL, 'lfifield19@netlog.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('9e4f20db-9292-4d06-a062-dd7d6ba724f9', 'NV-1033', 'Orel Bodman', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-11-12', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000025.0000, 26.0000, 4725025.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 25, '25436', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '16 Bunker Hill Lane', NULL, NULL, 'obodmanr@printfriendly.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('9e9084ac-ce7c-4ea3-b0be-5e52345c3fae', 'NV-1154', 'Julie Crommett', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000046.0000, 47.0000, 4725046.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 46, '25457', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4178 Dovetail Street', NULL, NULL, 'jcrommett1c@furl.net', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('a00d1894-f221-4bda-8c4e-365b0ac3967e', 'NV-1155', 'Magnum Fibben', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-04-23', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000047.0000, 48.0000, 4725047.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 47, '25458', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '87193 Maywood Parkway', NULL, NULL, 'mfibben1d@sphinn.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('a01c9720-e018-4fdd-ad86-461037d927ba', 'NV-1353', 'Pepita Stutely', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-11-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000045.0000, 46.0000, 4725045.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 45, '25456', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '726 Chive Center', NULL, NULL, 'pstutely1b@salon.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('a3a0d158-05dd-4422-8402-4dd7d38fe3ba', 'NV-1057', 'Thêm mới 1', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2023-04-10', 'nhân viên', NULL, '036202012169', '2023-01-22', 'Nam Định', NULL, NULL, 12000048.0000, 49.0000, 4725048.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 48, '25459', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', 'Xuân Hòa, Xuân Trường, Nam Định', '912945494', '946020547', 'trtheanh.work@gmail.com', '2023-07-28 18:11:41', 'TTANH Tạo mới', NULL, NULL),
-('a568a7ce-fc0b-4646-b974-1822af51cf05', 'NV-1011', 'Karol Jacqueminot', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-02-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000003.0000, 4.0000, 4725003.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 3, '25414', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '3 Westend Way', NULL, NULL, 'kjacqueminot5@merriam-webster.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('a6728134-14a0-4a38-a632-1b940280dbf6', 'NV-1151', 'Lenci Fifield', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-02-07', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000043.0000, 44.0000, 4725043.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 43, '25454', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '59 Nevada Point', NULL, NULL, 'lfifield19@netlog.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('a6bf58a4-0fa8-4f37-bcb4-ea010cefaa83', 'NV-1352', 'Washington Haythorne', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000044.0000, 45.0000, 4725044.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 44, '25455', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '39 Fairfield Street', NULL, NULL, 'whaythorne1a@bloglovin.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('a86cd61f-c063-4c7a-bbc9-f4343a0ff9a1', 'NV-1046', 'Elise Emmott', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-09-26', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000038.0000, 39.0000, 4725038.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 38, '25449', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7392 Columbus Crossing', NULL, NULL, 'eemmott14@webs.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('a927bc4e-2168-4032-bb2e-0859212e18b5', 'NV-1012', 'Alberto Cawthra', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000004.0000, 5.0000, 4725004.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 4, '25415', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '5 Stuart Terrace', NULL, NULL, 'acawthra6@disqus.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('aa24fc8e-de47-4142-b90a-331c93735e09', 'NV-1052', 'Washington Haythorne', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000044.0000, 45.0000, 4725044.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 44, '25455', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '39 Fairfield Street', NULL, NULL, 'whaythorne1a@bloglovin.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('aeb71e2a-3294-4ad2-96fa-4ce5f255574b', 'NV-1146', 'Elise Emmott', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-09-26', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000038.0000, 39.0000, 4725038.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 38, '25449', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7392 Columbus Crossing', NULL, NULL, 'eemmott14@webs.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('aebffdfd-6bed-4cf7-aa8d-57b42c51f7ba', 'NV-1141', 'Nicola Glassborow', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-03-06', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000033.0000, 34.0000, 4725033.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 33, '25444', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8621 Dorton Terrace', NULL, NULL, 'nglassborowz@tripadvisor.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('b09544a6-0243-4a98-a290-4561da8e5f23', 'NV-1030', 'Honey Putson', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000022.0000, 23.0000, 4725022.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 22, '25433', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '39 Mendota Park', NULL, NULL, 'hputsono@uiuc.edu', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('b209f013-c171-4323-8d2e-ab6aeb9bd0b1', 'NV-1053', 'Pepita Stutely', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-11-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000045.0000, 46.0000, 4725045.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 45, '25456', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '726 Chive Center', NULL, NULL, 'pstutely1b@salon.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('b66fca3a-2662-420e-b7ca-8e42c7c276b9', 'NV-1013', 'Rubin Leydon', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-01-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000005.0000, 6.0000, 4725005.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 5, '25416', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '6770 Reinke Alley', NULL, NULL, 'rleydon7@ebay.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('b6c61d6a-e58e-45d2-8963-bd837997e786', 'NV-1119', 'Concettina Tudball', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000011.0000, 12.0000, 4725011.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 11, '25422', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '921 Elgar Alley', NULL, NULL, 'ctudballd@baidu.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('b734d83f-613e-491f-b321-4d6a66852127', 'NV-1316', 'Rosie Harriskine', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-05-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000008.0000, 9.0000, 4725008.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 8, '25419', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '3180 Union Terrace', NULL, NULL, 'rharriskinea@ft.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('b74f5d00-b9d6-4b89-86eb-52e5207b84c2', 'NV-1123', 'Burtie Beddoes', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-03-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000015.0000, 16.0000, 4725015.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 15, '25426', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '1 Monterey Park', NULL, NULL, 'bbeddoesh@phpbb.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('b767752a-2d80-4b8e-95ee-c13328f33ef0', 'NV-1117', 'Terry Locock', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-04-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000009.0000, 10.0000, 4725009.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 9, '25420', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '77 Bonner Junction', NULL, NULL, 'tlocockb@mlb.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('b776d0f6-69cf-4b68-85ea-90568fc58a87', 'NV-1152', 'Washington Haythorne', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000044.0000, 45.0000, 4725044.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 44, '25455', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '39 Fairfield Street', NULL, NULL, 'whaythorne1a@bloglovin.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('b7b8b02e-654a-48d0-8bd1-28e24905950b', 'NV-1109', 'Locke Ireson', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-25', 'Nhân viên vip', NULL, '036202012169', '1990-04-10', 'Nam Định', NULL, NULL, 12000001.0000, 2.1000, 4725001.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 1, '25412', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9256 Coolidge Point', '912945494', '912945494', 'lireson3@hostgator.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('ba5d80ad-313b-40dd-bb39-5d6f0cddfdcd', 'NV-1028', 'Glenine Wrightim', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-09-14', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000020.0000, 21.0000, 4725020.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 20, '25431', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '10431 Derek Terrace', NULL, NULL, 'gwrightimm@list-manage.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('bcae9730-79c6-4742-a1c1-4f6784037c70', 'AB2-1000', 'Thế Anh', '17120d02-6ab5-3e43-18cb-66948daf6128', 'PB-9483', 'Phòng đào tạo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-07-28 18:16:32', 'TTANH Tạo mới', NULL, NULL),
-('be4cf010-454f-4aee-ba6d-bba1849bcccf', 'NV-1346', 'Elise Emmott', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-09-26', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000038.0000, 39.0000, 4725038.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 38, '25449', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7392 Columbus Crossing', NULL, NULL, 'eemmott14@webs.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL);
-INSERT INTO `employee` (`EmployeeId`, `EmployeeCode`, `FullName`, `DepartmentId`, `DepartmentCode`, `DepartmentName`, `Gender`, `DateOfBirth`, `Position`, `SupplierCustomerGroup`, `IdentityNumber`, `IdentityDate`, `IdentityPlace`, `PayAccount`, `ReceiveAccount`, `Salary`, `SalaryCoefficients`, `SalaryPaidForInsurance`, `PersonalTaxCode`, `TypeOfContract`, `NumberOfDependents`, `AccountNumber`, `BankName`, `BankBranch`, `BankProvince`, `ContactAddress`, `ContactPhoneNumber`, `ContactLandlinePhoneNumber`, `ContactEmail`, `CreatedDate`, `CreatedBy`, `ModifiedDate`, `ModifiedBy`) VALUES
-('c044bc60-a9f7-4119-973d-a5f279d3e27b', 'NV-1318', 'Gunner Christmas', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000010.0000, 11.0000, 4725010.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 10, '25421', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4571 Kenwood Pass', NULL, NULL, 'gchristmasc@mayoclinic.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('c21da672-367e-4371-a006-1aa6a99d14a0', 'NV-1015', 'Osbourne Wooster', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-01-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000007.0000, 8.0000, 4725007.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 7, '25418', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9138 Oak Street', NULL, NULL, 'owooster9@auda.org.au', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('c4edc007-514d-4720-b30f-133b14f90001', 'NV-1038', 'Dougie Tumbridge', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000030.0000, 31.0000, 4725030.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 30, '25441', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '76200 Pond Terrace', NULL, NULL, 'dtumbridgew@imgur.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('c5222018-17c3-4853-96a6-7c8114dd982a', 'NV-1331', 'Arlina Dalgety', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-01-31', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000023.0000, 24.0000, 4725023.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 23, '25434', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8634 Porter Place', NULL, NULL, 'adalgetyp@instagram.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('c765bebb-8d51-46a4-8001-6067fc9530f8', 'NV-1140', 'Sheilah Willcox', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-06-17', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000032.0000, 33.0000, 4725032.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 32, '25443', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8002 Hagan Road', NULL, NULL, 'swillcoxy@japanpost.jp', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('c7e2ef89-1647-4711-9814-6f5d53ebca9a', 'NV-1339', 'Jake Lanbertoni', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-10-14', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000031.0000, 32.0000, 4725031.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 31, '25442', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '32734 Cambridge Parkway', NULL, NULL, 'jlanbertonix@unesco.org', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('c8be9d26-daf0-4139-95ce-9e833c533ebb', 'NV-1312', 'Alberto Cawthra', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000004.0000, 5.0000, 4725004.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 4, '25415', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '5 Stuart Terrace', NULL, NULL, 'acawthra6@disqus.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('cb7bff10-5d41-4c80-a4db-5108c6be3675', 'NV-1138', 'Dougie Tumbridge', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000030.0000, 31.0000, 4725030.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 30, '25441', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '76200 Pond Terrace', NULL, NULL, 'dtumbridgew@imgur.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('cb8a975b-b01d-460b-b556-f7f2b6627a08', 'NV-1040', 'Sheilah Willcox', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-06-17', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000032.0000, 33.0000, 4725032.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 32, '25443', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8002 Hagan Road', NULL, NULL, 'swillcoxy@japanpost.jp', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('cc238750-689a-479d-bf6d-999948fabaec', 'NV-1336', 'Heloise Hinz', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-11', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000028.0000, 29.0000, 4725028.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 28, '25439', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8882 Boyd Court', NULL, NULL, 'hhinzu@hud.gov', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('ccbfc79f-b0f2-4672-8ae2-29a7de4d4723', 'NV-1056', 'Trần Thế Anh', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2023-04-10', 'Chủ tịch hội đồng quản trị', NULL, '036202012169', '2023-01-22', 'Nam Định', NULL, NULL, 12000048.0000, 49.0000, 4725048.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 48, '25459', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', 'Xuân Hòa, Xuân Trường, Nam Định', '912945494', '946020547', 'trtheanh.work@gmail.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('ccecc45d-1dc5-4739-bf29-74345eaed760', 'NV-1319', 'Concettina Tudball', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-12-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000011.0000, 12.0000, 4725011.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 11, '25422', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '921 Elgar Alley', NULL, NULL, 'ctudballd@baidu.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('cd0f50ae-0f17-4fe0-b1b0-d836ebdff6c9', 'NV-1338', 'Dougie Tumbridge', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000030.0000, 31.0000, 4725030.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 30, '25441', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '76200 Pond Terrace', NULL, NULL, 'dtumbridgew@imgur.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('cdd2d938-e229-40f3-a563-f8e85d8b2110', 'NV-1329', 'Zuzana Wetheril', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000021.0000, 22.0000, 4725021.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 21, '25432', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '20361 Shelley Avenue', NULL, NULL, 'zwetheriln@icio.us', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('cec22f46-ede7-458d-88c1-cb77698b7933', 'NV-1323', 'Burtie Beddoes', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-03-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000015.0000, 16.0000, 4725015.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 15, '25426', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '1 Monterey Park', NULL, NULL, 'bbeddoesh@phpbb.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('cfa7a7b8-84cc-4711-adfb-e188dc31d06e', 'NV-1008', 'Raynard Jopke', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-01-18', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000000.0000, 1.0000, 4725000.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 0, '25411', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9394 North Road', NULL, NULL, 'rjopke2@newyorker.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('cfb02733-c458-4693-8698-a69a45948876', 'NV-1337', 'Sonya Gabbot', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-09-24', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000029.0000, 30.0000, 4725029.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 29, '25440', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '187 Acker Street', NULL, NULL, 'sgabbotv@usgs.gov', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('cfb2d8f0-f5bc-4b90-9184-fa7c953fd1b3', 'NV-1126', 'Lizabeth Valentino', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-23', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000018.0000, 19.0000, 4725018.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 18, '25429', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '40 Gulseth Alley', NULL, NULL, 'lvalentinok@oaic.gov.au', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('d01d2564-0ba8-4bb7-94f0-fe3eeb74ebf5', 'NV-1060', 'Locke Ireson', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-25', 'Nhân viên vip', NULL, '036202012169', '1990-04-10', 'Nam Định', NULL, NULL, 12000001.0000, 2.1000, 4725001.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 1, '25412', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9256 Coolidge Point', '912945494', '912945494', 'lireson3@hostgator.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('d3464249-b4d1-4c76-a8bb-28b0bd00ed11', 'NV-1017', 'Terry Locock', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-04-21', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000009.0000, 10.0000, 4725009.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 9, '25420', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '77 Bonner Junction', NULL, NULL, 'tlocockb@mlb.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('d4e604f5-a3a8-44a3-a4ad-82be47e2e6ee', 'NV-1032', 'Waldo Heinz', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-12-11', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000024.0000, 25.0000, 4725024.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 24, '25435', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '37 La Follette Crossing', NULL, NULL, 'wheinzq@twitpic.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('d89ed9ff-92cf-4a94-9fe1-a18994b04174', 'NV-1135', 'Rochette Luttger', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-03-26', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000027.0000, 28.0000, 4725027.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 27, '25438', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4 Claremont Place', NULL, NULL, 'rluttgert@bloomberg.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('dbdd1488-3182-44d7-8d7c-49688e4978f1', 'NV-1332', 'Waldo Heinz', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-12-11', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000024.0000, 25.0000, 4725024.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 24, '25435', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '37 La Follette Crossing', NULL, NULL, 'wheinzq@twitpic.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('dd62a536-096b-4dd7-b8b6-8a2bf110ffd1', 'NV-1127', 'Taylor Triswell', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-07-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000019.0000, 20.0000, 4725019.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 19, '25430', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '1 Morningstar Terrace', NULL, NULL, 'ttriswelll@hud.gov', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('dd7904c5-9738-423f-bf96-6dc26376c5a7', 'NV-1350', 'Kalie Jellico', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-06-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000042.0000, 43.0000, 4725042.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 42, '25453', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '7 Sullivan Court', NULL, NULL, 'kjellico18@umn.edu', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('ddd72da2-234c-49a9-9d71-b4fec34f0469', 'A-1001', 'Thay đổi excel', '17120d02-6ab5-3e43-18cb-66948daf6128', 'PB-9483', 'Phòng đào tạo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-07-28 18:16:32', 'TTANH Tạo mới', NULL, NULL),
-('df94982a-c89e-423c-9022-ed8b2c2f4f79', 'NV-1115', 'Osbourne Wooster', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-01-20', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000007.0000, 8.0000, 4725007.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 7, '25418', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9138 Oak Street', NULL, NULL, 'owooster9@auda.org.au', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('e0ee6bd8-51cd-4e7f-9e5d-3295f1d3932e', 'NV-1131', 'Arlina Dalgety', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-01-31', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000023.0000, 24.0000, 4725023.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 23, '25434', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8634 Porter Place', NULL, NULL, 'adalgetyp@instagram.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('e18fa527-5d91-460c-aef4-9412eb605e2c', 'NV-1335', 'Rochette Luttger', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-03-26', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000027.0000, 28.0000, 4725027.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 27, '25438', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4 Claremont Place', NULL, NULL, 'rluttgert@bloomberg.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('e18fe39b-91a9-4356-a207-b9ac38a0915d', 'NV-1311', 'Karol Jacqueminot', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-02-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000003.0000, 4.0000, 4725003.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 3, '25414', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '3 Westend Way', NULL, NULL, 'kjacqueminot5@merriam-webster.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('e47953d1-a43f-4af4-87fe-4f4915056f10', 'NV-1334', 'Orly Neeves', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-05-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000026.0000, 27.0000, 4725026.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 26, '25437', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4 Mitchell Road', NULL, NULL, 'oneevess@bbc.co.uk', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('e7edf6b0-ce15-4bf5-8d72-a86a0f3db35d', 'NV-1048', 'Sandro Holworth', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-12-03', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000040.0000, 41.0000, 4725040.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 40, '25451', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '06927 Veith Plaza', NULL, NULL, 'sholworth16@list-manage.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('e85d4196-f337-443d-9613-b084567028e0', 'NV-1322', 'Kassie Benion', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-02-08', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000014.0000, 15.0000, 4725014.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 14, '25425', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '147 Mifflin Junction', NULL, NULL, 'kbeniong@youku.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('e8d90658-87a7-49a6-8099-d95e9b409f82', 'NV-1136', 'Heloise Hinz', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-07-11', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000028.0000, 29.0000, 4725028.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 28, '25439', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8882 Boyd Court', NULL, NULL, 'hhinzu@hud.gov', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('e94e7d8e-fc2d-4fad-be03-701f1b33699e', 'NV-1029', 'Zuzana Wetheril', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000021.0000, 22.0000, 4725021.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 21, '25432', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '20361 Shelley Avenue', NULL, NULL, 'zwetheriln@icio.us', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('ebf06878-b857-41f6-888f-d4589321fe97', 'NV-1153', 'Pepita Stutely', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-11-13', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000045.0000, 46.0000, 4725045.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 45, '25456', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '726 Chive Center', NULL, NULL, 'pstutely1b@salon.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('ed9ba407-66e2-4022-b524-cfb95423f86d', 'NV-1308', 'Raynard Jopke', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-01-18', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000000.0000, 1.0000, 4725000.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 0, '25411', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9394 North Road', NULL, NULL, 'rjopke2@newyorker.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('efa5c937-11bc-480a-b59a-6154762c6f28', 'NV-1132', 'Waldo Heinz', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-12-11', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000024.0000, 25.0000, 4725024.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 24, '25435', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '37 La Follette Crossing', NULL, NULL, 'wheinzq@twitpic.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('f193e335-20bd-42ea-b04d-2dfc95d516f8', 'NV-1129', 'Zuzana Wetheril', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-30', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000021.0000, 22.0000, 4725021.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 21, '25432', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '20361 Shelley Avenue', NULL, NULL, 'zwetheriln@icio.us', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL),
-('f4a71434-50fa-492c-b948-2c52dfc57f05', 'NV-1025', 'Obadias Holtham', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2021-05-28', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000017.0000, 18.0000, 4725017.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 17, '25428', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '94782 6th Parkway', NULL, NULL, 'oholthamj@vimeo.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('f5ceb51f-9bf7-4057-8d51-e92747f2ffc5', 'NV-1341', 'Nicola Glassborow', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-03-06', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000033.0000, 34.0000, 4725033.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 33, '25444', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8621 Dorton Terrace', NULL, NULL, 'nglassborowz@tripadvisor.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('f5d9c193-e12c-4328-8201-dd2bbfa495d2', 'NV-1356', 'Trần Thế Anh', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 0, '2023-04-10', 'Chủ tịch hội đồng quản trị', NULL, '036202012169', '2023-01-22', 'Nam Định', NULL, NULL, 12000048.0000, 49.0000, 4725048.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 48, '25459', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', 'Xuân Hòa, Xuân Trường, Nam Định', '912945494', '946020547', 'trtheanh.work@gmail.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('f6f6e69e-07f0-42ca-b2ca-5d8d0b8ba021', 'AB2-1005', 'thế anh trần', '17120d02-6ab5-3e43-18cb-66948daf6128', 'PB-9483', 'Phòng đào tạo', 0, '2002-06-09', 'giám đốc', NULL, '0912313', NULL, '91', NULL, NULL, NULL, NULL, NULL, NULL, 'sdfaodfidjsàkldfjdlkàksdjấlfjdáklfjsalkdfjalksfdjlskjfdlsakjfdlạ', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2023-07-29 13:36:31', 'USER ADD', NULL, NULL),
-('fbba8eeb-7261-4bb3-a911-498d2d39027f', 'NV-1044', 'Stevy Canas', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2020-11-01', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000036.0000, 37.0000, 4725036.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 36, '25447', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8114 Elmside Crossing', NULL, NULL, 'scanas12@theglobeandmail.com', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('fce0a146-eedb-4a46-bf40-becd2ca0bbb8', 'NV-1054', 'Julie Crommett', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-04-16', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000046.0000, 47.0000, 4725046.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 46, '25457', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '4178 Dovetail Street', NULL, NULL, 'jcrommett1c@furl.net', '2023-07-28 17:55:43', 'TTANH Tạo mới', '2023-07-28 18:11:41', 'TTANH Cập nhật'),
-('fced3276-87e8-4aa1-bcbb-4f1e40ed8a93', 'NV-1309', 'Locke Ireson', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2022-10-25', 'Nhân viên vip', NULL, '036202012169', '1990-04-10', 'Nam Định', NULL, NULL, 12000001.0000, 2.1000, 4725001.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 1, '25412', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9256 Coolidge Point', '912945494', '912945494', 'lireson3@hostgator.com', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('fd7641d6-5fb2-4c13-a2c3-59c13f61ce7c', 'NV-1340', 'Sheilah Willcox', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-06-17', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000032.0000, 33.0000, 4725032.0000, '8956454525', 'Cư trú và không ký HĐLĐ/HĐLĐ dưới 3 tháng', 32, '25443', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '8002 Hagan Road', NULL, NULL, 'swillcoxy@japanpost.jp', '2023-07-29 13:48:57', 'TTANH Tạo mới', NULL, NULL),
-('fed46eb0-af28-41a6-be27-e01c80857960', 'NV-1108', 'Raynard Jopke', '469b3ece-744a-45d5-957d-e8c757976496', 'PB-5222', 'Phòng sản xuất', 1, '2023-01-18', 'Nhân viên vip', NULL, NULL, NULL, NULL, NULL, NULL, 12000000.0000, 1.0000, 4725000.0000, '8956454525', 'Cư trú và không ký HĐLĐ/H', 0, '25411', 'Ngân hàng Á Châu', 'Hà Thành', 'Hà Nội', '9394 North Road', NULL, NULL, 'rjopke2@newyorker.com', '2023-07-28 18:12:27', 'TTANH Tạo mới', NULL, NULL);
-
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `employeelayout`
+-- Table structure for table `employeelayout`
 --
 
 CREATE TABLE `employeelayout` (
   `EmployeeLayoutId` char(36) NOT NULL COMMENT 'Khóa chính theo Guid.',
   `ServerColumnName` varchar(255) NOT NULL COMMENT 'Tên của cột trên server để lấy dữ liệu từ api.',
-  `ClientColumnName` varchar(255) NOT NULL COMMENT 'Tên cột hiển thị trên màn hình.',
+  `viTooltip` varchar(255) NOT NULL COMMENT 'Tooltip bằng tiếng việt.',
+  `viClientColumnName` varchar(255) NOT NULL COMMENT 'Tên cột hiển thị trên mà hình bằng tiếng việt.',
+  `viClientColumnNameDefault` varchar(255) NOT NULL COMMENT 'Tên cột mặc định bằng tiếng việt.',
+  `enTooltip` varchar(255) NOT NULL COMMENT 'Tooltip bằng tiếng anh.',
+  `enClientColumnName` varchar(255) NOT NULL COMMENT 'Tên cột hiển thị trên màn hình bằng tiếng anh.',
+  `enClientColumnNameDefault` varchar(255) NOT NULL COMMENT 'Tên cột mặc định bằng tiếng anh.',
   `ColumnWidth` int(11) NOT NULL COMMENT 'Kích thước cột hiển thị trên màn hình.',
+  `ColumnWidthDefault` int(11) NOT NULL COMMENT 'Chiều dài của cột mặc định.',
   `ColumnTextAlign` varchar(255) NOT NULL COMMENT 'Loại căn giữa của cột hiển thị trên màn hình (center - căn giữa; left - căn trái; right - căn phải)',
   `ColumnFormat` varchar(255) NOT NULL COMMENT 'Loại format của các phần tử trong cột (text - chữ; date - ngày tháng; currency - tiền tệ)',
   `ColumnIsShow` tinyint(1) NOT NULL COMMENT 'Xác định xem cột này có được hiển thị không.',
-  `ColumnIsPin` tinyint(1) NOT NULL COMMENT 'Xác định xem cột có được ghim không.'
+  `ColumnIsShowDefault` tinyint(1) NOT NULL COMMENT 'Hiển thị cột mặc định.',
+  `ColumnIsPin` tinyint(1) NOT NULL COMMENT 'Xác định xem cột có được ghim không.',
+  `ColumnIsPinDefault` tinyint(1) NOT NULL COMMENT 'Cố định cột mặc định.',
+  `OrderNumber` int(11) NOT NULL COMMENT 'Xác định số thứ tự của cột.',
+  `OrderNumberDefault` int(11) NOT NULL COMMENT 'Số thứ tự của cột mặc định.',
+  `CreatedDate` datetime NOT NULL COMMENT 'Ngày tạo.',
+  `CreatedBy` varchar(100) NOT NULL COMMENT 'Người tạo.',
+  `ModifiedDate` datetime DEFAULT NULL COMMENT 'Ngày sửa.',
+  `ModifiedBy` varchar(100) DEFAULT NULL COMMENT 'Người sửa.'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Lưu trữ thông tin bố cục của phân hệ quản lý nhân viên.';
+
+--
+-- Dumping data for table `employeelayout`
+--
+
+INSERT INTO `employeelayout` (`EmployeeLayoutId`, `ServerColumnName`, `viTooltip`, `viClientColumnName`, `viClientColumnNameDefault`, `enTooltip`, `enClientColumnName`, `enClientColumnNameDefault`, `ColumnWidth`, `ColumnWidthDefault`, `ColumnTextAlign`, `ColumnFormat`, `ColumnIsShow`, `ColumnIsShowDefault`, `ColumnIsPin`, `ColumnIsPinDefault`, `OrderNumber`, `OrderNumberDefault`, `CreatedDate`, `CreatedBy`, `ModifiedDate`, `ModifiedBy`) VALUES
+('3fa85f64-5717-4562-b3fc-2c963f66af10', 'IdentityNumber', 'Số chứng minh nhân dân', 'Số CMND', 'Số CMND', 'Identity Number', 'Identity Number', 'Identity Number', 200, 200, 'right', 'text', 1, 1, 0, 0, 5, 5, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af11', 'IdentityDate', 'Ngày cấp', 'Ngày cấp', 'Ngày cấp', 'Identity Date', 'Identity Date', 'Identity Date', 150, 150, 'center', 'date', 1, 1, 0, 0, 6, 6, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af12', 'IdentityPlace', 'Nơi cấp', 'Nơi cấp', 'Nơi cấp', 'Identity Place', 'Identity Place', 'Identity Place', 150, 150, 'left', 'text', 1, 1, 0, 0, 7, 7, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af13', 'Position', 'Chức danh', 'Chức danh', 'Chức danh', 'Position', 'Position', 'Position', 250, 250, 'left', 'text', 1, 1, 0, 0, 8, 8, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af14', 'DepartmentCode', 'Mã đơn vị', 'Mã đơn vị', 'Mã đơn vị', 'Department Code', 'Department Code', 'Department Code', 150, 150, 'left', 'text', 1, 1, 0, 0, 9, 9, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af15', 'DepartmentName', 'Tên đơn vị', 'Tên đơn vị', 'Tên đơn vị', 'Department Name', 'Department Name', 'Department Name', 250, 250, 'left', 'text', 1, 1, 0, 0, 10, 10, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af16', 'SupplierCustomerGroup', 'Nhóm khách hàng/nhà cung cấp', 'Nhóm KH, NCC', 'Nhóm KH, NCC', 'Supplier Customer Group', 'Supplier Customer Group', 'Supplier Customer Group', 200, 200, 'left', 'text', 1, 1, 0, 0, 11, 11, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af17', 'PayAccount', 'TK công nợ phải trả', 'TK công nợ phải trả', 'TK công nợ phải trả', 'Pay Account', 'Pay Account', 'Pay Account', 200, 200, 'left', 'text', 1, 1, 0, 0, 12, 12, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af18', 'ReceiveAccount', 'TK công nợ phải thu', 'TK công nợ phải thu', 'TK công nợ phải thu', 'Receive Account', 'Receive Account', 'Receive Account', 200, 200, 'left', 'text', 1, 1, 0, 0, 13, 13, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af19', 'Salary', 'Lương thỏa thuận', 'Lương thỏa thuận', 'Lương thỏa thuận', 'Salary', 'Salary', 'Salary', 200, 200, 'right', 'currency', 1, 1, 0, 0, 14, 14, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af20', 'SalaryCoefficients', 'Hệ số lương', 'Hệ số lương', 'Hệ số lương', 'Salary Coefficients', 'Salary Coefficients', 'Salary Coefficients', 200, 200, 'right', 'text', 1, 1, 0, 0, 15, 15, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af21', 'SalaryPaidForInsurance', 'Lương đóng bảo hiểm', 'Lương đóng bảo hiểm', 'Lương đóng bảo hiểm', 'Salary Paid For Insurance', 'Salary Paid For Insurance', 'Salary Paid For Insurance', 200, 200, 'right', 'currency', 1, 1, 0, 0, 16, 16, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af22', 'PersonalTaxCode', 'Mã số thuế', 'Mã số thuế', 'Mã số thuế', 'Personal Tax Code', 'Personal Tax Code', 'Personal Tax Code', 150, 150, 'right', 'text', 1, 1, 0, 0, 17, 17, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af23', 'TypeOfContract', 'Loại hợp đồng', 'Loại hợp đồng', 'Loại hợp đồng', 'Type Of Contract', 'Type Of Contract', 'Type Of Contract', 150, 150, 'left', 'text', 1, 1, 0, 0, 18, 18, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af24', 'NumberOfDependents', 'Số người phụ thuộc', 'Số người phụ thuộc', 'Số người phụ thuộc', 'Number Of Dependents', 'Number Of Dependents', 'Number Of Dependents', 200, 200, 'right', 'text', 1, 1, 0, 0, 19, 19, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af25', 'AccountNumber', 'Số tài khoản', 'Số tài khoản', 'Số tài khoản', 'Account Number', 'Account Number', 'Account Number', 150, 150, 'right', 'text', 1, 1, 0, 0, 20, 20, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af26', 'BankName', 'Tên ngân hàng', 'Tên ngân hàng', 'Tên ngân hàng', 'Bank Name', 'Bank Name', 'Bank Name', 250, 250, 'left', 'text', 1, 1, 0, 0, 21, 21, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af27', 'BankBranch', 'Chi nhánh tài khoản ngân hàng', 'Chi nhánh TK ngân hàng', 'Chi nhánh TK ngân hàng', 'Bank Branch', 'Bank Branch', 'Bank Branch', 250, 250, 'left', 'text', 1, 1, 0, 0, 22, 22, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af28', 'BankProvince', 'Tỉnh/Thành phố ngân hàng', 'Tỉnh/TP ngân hàng', 'Tỉnh/TP ngân hàng', 'Bank Province', 'Bank Province', 'Bank Province', 180, 180, 'left', 'text', 1, 1, 0, 0, 23, 23, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af29', 'ContactAddress', 'Địa chỉ', 'Địa chỉ', 'Địa chỉ', 'Contact Address', 'Contact Address', 'Contact Address', 200, 200, 'left', 'text', 1, 1, 0, 0, 24, 24, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af30', 'ContactPhoneNumber', 'Điện thoại di động', 'ĐT di động', 'ĐT di động', 'Contact Phone Number', 'Contact Phone Number', 'Contact Phone Number', 150, 150, 'right', 'text', 1, 1, 0, 0, 25, 25, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af31', 'ContactLandlinePhoneNumber', 'Điện thoại cố định', 'ĐT cố định', 'ĐT cố định', 'Contact Landline Phone Number', 'Contact Landline Phone Number', 'Contact Landline Phone Number', 150, 150, 'right', 'text', 1, 1, 0, 0, 26, 26, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66af32', 'ContactEmail', 'Email', 'Email', 'Email', 'Contact Email', 'Contact Email', 'Contact Email', 200, 200, 'left', 'text', 1, 1, 0, 0, 27, 27, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66afa6', 'EmployeeCode', 'Mã nhân viên', 'Mã nhân viên', 'Mã nhân viên', 'Employee Code', 'Employee Code', 'Employee Code', 150, 150, 'left', 'text', 1, 1, 0, 0, 1, 1, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66afa7', 'FullName', 'Tên nhân viên', 'Tên nhân viên', 'Tên nhân viên', 'Full Name', 'Full Name', 'Full Name', 250, 250, 'left', 'text', 1, 1, 0, 0, 2, 2, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66afa8', 'Gender', 'Giới tính', 'Giới tính', 'Giới tính', 'Gender', 'Gender', 'Gender', 120, 120, 'left', 'gender', 1, 1, 0, 0, 3, 3, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh'),
+('3fa85f64-5717-4562-b3fc-2c963f66afa9', 'DateOfBirth', 'Ngày sinh', 'Ngày sinh', 'Ngày sinh', 'Date Of Birth', 'Date Of Birth', 'Date Of Birth', 150, 150, 'center', 'date', 1, 1, 0, 0, 4, 4, '2023-08-02 20:31:27', 'Thế Anh', '2023-08-06 17:07:28', 'Thế Anh');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfireaggregatedcounter`
+-- Table structure for table `hangfireaggregatedcounter`
 --
 
 CREATE TABLE `hangfireaggregatedcounter` (
@@ -550,32 +508,45 @@ CREATE TABLE `hangfireaggregatedcounter` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfireaggregatedcounter`
+-- Dumping data for table `hangfireaggregatedcounter`
 --
 
 INSERT INTO `hangfireaggregatedcounter` (`Id`, `Key`, `Value`, `ExpireAt`) VALUES
-(1, 'stats:succeeded', 120, NULL),
+(1, 'stats:succeeded', 291, NULL),
 (2, 'stats:succeeded:2023-07-24', 24, '2023-08-24 18:00:16'),
 (27, 'stats:succeeded:2023-07-25', 16, '2023-08-25 15:00:28'),
 (45, 'stats:succeeded:2023-07-26', 15, '2023-08-26 16:00:05'),
 (62, 'stats:succeeded:2023-07-27', 24, '2023-08-27 16:05:10'),
 (89, 'stats:succeeded:2023-07-28', 15, '2023-08-28 13:50:13'),
 (106, 'stats:succeeded:2023-07-29', 13, '2023-08-29 07:00:25'),
-(118, 'stats:succeeded:2023-07-29-06', 2, '2023-07-30 06:50:14'),
-(120, 'stats:succeeded:2023-07-29-07', 1, '2023-07-30 07:00:25'),
-(121, 'stats:succeeded:2023-07-30', 13, '2023-08-30 07:00:33'),
-(122, 'stats:succeeded:2023-07-30-01', 2, '2023-07-31 01:51:12'),
-(124, 'stats:succeeded:2023-07-30-02', 2, '2023-07-31 02:50:46'),
-(126, 'stats:succeeded:2023-07-30-03', 2, '2023-07-31 03:50:48'),
-(128, 'stats:succeeded:2023-07-30-04', 2, '2023-07-31 04:50:28'),
-(130, 'stats:succeeded:2023-07-30-05', 2, '2023-07-31 05:50:10'),
-(132, 'stats:succeeded:2023-07-30-06', 2, '2023-07-31 06:50:02'),
-(134, 'stats:succeeded:2023-07-30-07', 1, '2023-07-31 07:00:33');
+(121, 'stats:succeeded:2023-07-30', 30, '2023-08-30 15:50:01'),
+(152, 'stats:succeeded:2023-07-31', 19, '2023-08-31 23:50:08'),
+(171, 'stats:succeeded:2023-08-01', 31, '2023-09-01 15:00:25'),
+(204, 'stats:succeeded:2023-08-02', 27, '2023-09-02 16:00:07'),
+(231, 'stats:succeeded:2023-08-03', 29, '2023-09-03 16:00:06'),
+(262, 'stats:succeeded:2023-08-04', 1, '2023-09-04 00:20:04'),
+(264, 'stats:succeeded:2023-08-05', 14, '2023-09-05 15:30:20'),
+(265, 'stats:succeeded:2023-08-05-10', 2, '2023-08-06 10:50:50'),
+(270, 'stats:succeeded:2023-08-05-11', 4, '2023-08-06 11:45:14'),
+(274, 'stats:succeeded:2023-08-05-12', 1, '2023-08-06 12:01:14'),
+(275, 'stats:succeeded:2023-08-05-14', 4, '2023-08-06 14:45:36'),
+(279, 'stats:succeeded:2023-08-05-15', 3, '2023-08-06 15:30:20'),
+(282, 'stats:succeeded:2023-08-06', 33, '2023-09-06 10:15:07'),
+(283, 'stats:succeeded:2023-08-06-00', 4, '2023-08-07 00:45:04'),
+(288, 'stats:succeeded:2023-08-06-01', 4, '2023-08-07 01:45:16'),
+(292, 'stats:succeeded:2023-08-06-02', 4, '2023-08-07 02:45:12'),
+(296, 'stats:succeeded:2023-08-06-03', 4, '2023-08-07 03:45:15'),
+(300, 'stats:succeeded:2023-08-06-04', 2, '2023-08-07 04:16:16'),
+(302, 'stats:succeeded:2023-08-06-06', 1, '2023-08-07 06:50:07'),
+(303, 'stats:succeeded:2023-08-06-07', 4, '2023-08-07 07:45:16'),
+(307, 'stats:succeeded:2023-08-06-08', 4, '2023-08-07 08:45:09'),
+(311, 'stats:succeeded:2023-08-06-09', 4, '2023-08-07 09:45:04'),
+(315, 'stats:succeeded:2023-08-06-10', 2, '2023-08-07 10:15:07');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirecounter`
+-- Table structure for table `hangfirecounter`
 --
 
 CREATE TABLE `hangfirecounter` (
@@ -588,7 +559,7 @@ CREATE TABLE `hangfirecounter` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfiredistributedlock`
+-- Table structure for table `hangfiredistributedlock`
 --
 
 CREATE TABLE `hangfiredistributedlock` (
@@ -599,7 +570,7 @@ CREATE TABLE `hangfiredistributedlock` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirehash`
+-- Table structure for table `hangfirehash`
 --
 
 CREATE TABLE `hangfirehash` (
@@ -611,24 +582,24 @@ CREATE TABLE `hangfirehash` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfirehash`
+-- Dumping data for table `hangfirehash`
 --
 
 INSERT INTO `hangfirehash` (`Id`, `Key`, `Field`, `Value`, `ExpireAt`) VALUES
 (1, 'recurring-job:IScheduleService.ClearFiles', 'Queue', 'default', NULL),
-(2, 'recurring-job:IScheduleService.ClearFiles', 'Cron', '*/50 * * * *', NULL),
+(2, 'recurring-job:IScheduleService.ClearFiles', 'Cron', '*/15 * * * *', NULL),
 (3, 'recurring-job:IScheduleService.ClearFiles', 'TimeZoneId', 'UTC', NULL),
 (4, 'recurring-job:IScheduleService.ClearFiles', 'Job', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', NULL),
 (5, 'recurring-job:IScheduleService.ClearFiles', 'CreatedAt', '2023-07-24T06:39:48.3311497Z', NULL),
-(6, 'recurring-job:IScheduleService.ClearFiles', 'NextExecution', '2023-07-30T07:50:00.0000000Z', NULL),
+(6, 'recurring-job:IScheduleService.ClearFiles', 'NextExecution', '2023-08-06T10:30:00.0000000Z', NULL),
 (7, 'recurring-job:IScheduleService.ClearFiles', 'V', '2', NULL),
-(8, 'recurring-job:IScheduleService.ClearFiles', 'LastExecution', '2023-07-30T07:00:30.6184213Z', NULL),
-(10, 'recurring-job:IScheduleService.ClearFiles', 'LastJobId', '120', NULL);
+(8, 'recurring-job:IScheduleService.ClearFiles', 'LastExecution', '2023-08-06T10:15:02.9257811Z', NULL),
+(10, 'recurring-job:IScheduleService.ClearFiles', 'LastJobId', '291', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirejob`
+-- Table structure for table `hangfirejob`
 --
 
 CREATE TABLE `hangfirejob` (
@@ -642,30 +613,62 @@ CREATE TABLE `hangfirejob` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfirejob`
+-- Dumping data for table `hangfirejob`
 --
 
 INSERT INTO `hangfirejob` (`Id`, `StateId`, `StateName`, `InvocationData`, `Arguments`, `CreatedAt`, `ExpireAt`) VALUES
-(106, 318, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-29 06:50:06.751449', '2023-07-30 06:50:14.990573'),
-(107, 321, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-29 07:00:22.468555', '2023-07-30 07:00:25.512341'),
-(108, 324, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 01:46:22.528086', '2023-07-31 01:46:32.593733'),
-(109, 327, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 01:51:07.919646', '2023-07-31 01:51:12.843111'),
-(110, 330, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 02:00:07.269524', '2023-07-31 02:00:13.424637'),
-(111, 333, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 02:50:40.374254', '2023-07-31 02:50:46.303404'),
-(112, 336, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 03:00:12.332185', '2023-07-31 03:00:16.844361'),
-(113, 339, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 03:50:38.295329', '2023-07-31 03:50:48.230616'),
-(114, 342, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 04:20:46.647826', '2023-07-31 04:20:56.658769'),
-(115, 345, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 04:50:18.412936', '2023-07-31 04:50:28.310127'),
-(116, 348, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 05:00:49.046651', '2023-07-31 05:00:58.855477'),
-(117, 351, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 05:50:00.676766', '2023-07-31 05:50:10.364228'),
-(118, 354, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 06:00:46.481393', '2023-07-31 06:00:46.951704'),
-(119, 357, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 06:50:00.040693', '2023-07-31 06:50:02.589041'),
-(120, 360, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-07-30 07:00:30.623945', '2023-07-31 07:00:33.253530');
+(245, 735, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 10:40:19.847091', '2023-08-06 10:40:40.123180'),
+(246, 738, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 10:50:50.415148', '2023-08-06 10:50:50.588455'),
+(247, 741, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 11:00:11.519614', '2023-08-06 11:00:13.100438'),
+(248, 744, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 11:20:25.796422', '2023-08-06 11:20:35.783702'),
+(249, 747, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 11:30:04.159648', '2023-08-06 11:30:12.896426'),
+(250, 750, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 11:45:08.704830', '2023-08-06 11:45:14.031337'),
+(251, 753, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 12:01:09.786464', '2023-08-06 12:01:14.963759'),
+(252, 756, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 14:03:13.752732', '2023-08-06 14:03:23.792842'),
+(253, 759, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 14:15:29.458187', '2023-08-06 14:15:34.482927'),
+(254, 762, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 14:30:30.379585', '2023-08-06 14:30:35.279908'),
+(255, 765, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 14:45:31.287416', '2023-08-06 14:45:36.020104'),
+(256, 768, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 15:00:17.223255', '2023-08-06 15:00:26.813647'),
+(257, 771, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 15:15:18.138893', '2023-08-06 15:15:27.649735'),
+(258, 774, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-05 15:30:15.216800', '2023-08-06 15:30:20.198717'),
+(259, 777, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 00:04:43.371459', '2023-08-07 00:04:53.405510'),
+(260, 780, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 00:15:04.369104', '2023-08-07 00:15:13.923825'),
+(261, 783, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 00:30:05.336411', '2023-08-07 00:30:05.796416'),
+(262, 786, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 00:45:04.268198', '2023-08-07 00:45:04.635275'),
+(263, 789, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 01:00:02.008844', '2023-08-07 01:00:02.372562'),
+(264, 792, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 01:15:01.272676', '2023-08-07 01:15:05.220757'),
+(265, 795, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 01:30:02.929878', '2023-08-07 01:30:06.059350'),
+(266, 798, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 01:45:12.381317', '2023-08-07 01:45:16.984712'),
+(267, 801, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 02:00:03.300574', '2023-08-07 02:00:08.150802'),
+(268, 804, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 02:15:12.195236', '2023-08-07 02:15:18.906308'),
+(269, 807, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 02:30:04.864223', '2023-08-07 02:30:11.327334'),
+(270, 810, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 02:45:04.636865', '2023-08-07 02:45:12.077687'),
+(271, 813, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 03:00:09.061141', '2023-08-07 03:00:12.835047'),
+(272, 816, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 03:15:07.192696', '2023-08-07 03:15:13.558096'),
+(273, 819, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 03:30:07.424773', '2023-08-07 03:30:14.317907'),
+(274, 822, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 03:45:06.380046', '2023-08-07 03:45:15.097754'),
+(275, 825, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 04:01:07.382470', '2023-08-07 04:01:15.929501'),
+(276, 828, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 04:16:08.336336', '2023-08-07 04:16:16.719066'),
+(277, 831, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 06:49:57.890333', '2023-08-07 06:50:07.936856'),
+(278, 834, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 07:00:19.165700', '2023-08-07 07:00:24.120080'),
+(279, 837, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 07:15:20.011512', '2023-08-07 07:15:24.934176'),
+(280, 840, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 07:30:20.907926', '2023-08-07 07:30:25.731320'),
+(281, 843, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 07:45:06.856564', '2023-08-07 07:45:16.522982'),
+(282, 846, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 08:00:07.852645', '2023-08-07 08:00:17.403372'),
+(283, 849, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 08:15:08.743093', '2023-08-07 08:15:18.179077'),
+(284, 852, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 08:30:05.287011', '2023-08-07 08:30:09.005800'),
+(285, 855, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 08:45:02.835650', '2023-08-07 08:45:09.822626'),
+(286, 858, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 09:00:05.158546', '2023-08-07 09:00:10.646594'),
+(287, 861, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 09:20:32.816653', '2023-08-07 09:20:42.843358'),
+(288, 864, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 09:30:01.608356', '2023-08-07 09:30:03.887709'),
+(289, 867, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 09:45:01.288141', '2023-08-07 09:45:04.759782'),
+(290, 870, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 10:00:01.251661', '2023-08-07 10:00:05.550266'),
+(291, 873, 'Succeeded', '{\"Type\":\"MISA.WebFresher052023.CTM.Application.IScheduleService, MISA.WebFresher052023.CTM.Application\",\"Method\":\"ClearFiles\",\"ParameterTypes\":\"[\\\"System.String\\\"]\",\"Arguments\":\"[\\\"\\\\\\\"C:\\\\\\\\\\\\\\\\Users\\\\\\\\\\\\\\\\thean\\\\\\\\\\\\\\\\OneDrive\\\\\\\\\\\\\\\\Desktop\\\\\\\\\\\\\\\\misa\\\\\\\\\\\\\\\\web202305\\\\\\\\\\\\\\\\mf1666-ttanh\\\\\\\\\\\\\\\\aspnetcore\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\\\\\\\\\client-files\\\\\\\"\\\"]\"}', '[\"\\\"C:\\\\\\\\Users\\\\\\\\thean\\\\\\\\OneDrive\\\\\\\\Desktop\\\\\\\\misa\\\\\\\\web202305\\\\\\\\mf1666-ttanh\\\\\\\\aspnetcore\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\MISA.WebFresher052023.CTM\\\\\\\\client-files\\\"\"]', '2023-08-06 10:15:02.929888', '2023-08-07 10:15:07.032681');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirejobparameter`
+-- Table structure for table `hangfirejobparameter`
 --
 
 CREATE TABLE `hangfirejobparameter` (
@@ -676,75 +679,203 @@ CREATE TABLE `hangfirejobparameter` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfirejobparameter`
+-- Dumping data for table `hangfirejobparameter`
 --
 
 INSERT INTO `hangfirejobparameter` (`Id`, `JobId`, `Name`, `Value`) VALUES
-(421, 106, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(422, 106, 'Time', '1690613406'),
-(423, 106, 'CurrentCulture', '\"en-US\"'),
-(424, 106, 'CurrentUICulture', '\"en-US\"'),
-(425, 107, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(426, 107, 'Time', '1690614022'),
-(427, 107, 'CurrentCulture', '\"en-US\"'),
-(428, 107, 'CurrentUICulture', '\"en-US\"'),
-(429, 108, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(430, 108, 'Time', '1690681582'),
-(431, 108, 'CurrentCulture', '\"en-US\"'),
-(432, 108, 'CurrentUICulture', '\"en-US\"'),
-(433, 109, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(434, 109, 'Time', '1690681867'),
-(435, 109, 'CurrentCulture', '\"en-US\"'),
-(436, 109, 'CurrentUICulture', '\"en-US\"'),
-(437, 110, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(438, 110, 'Time', '1690682407'),
-(439, 110, 'CurrentCulture', '\"en-US\"'),
-(440, 110, 'CurrentUICulture', '\"en-US\"'),
-(441, 111, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(442, 111, 'Time', '1690685440'),
-(443, 111, 'CurrentCulture', '\"en-US\"'),
-(444, 111, 'CurrentUICulture', '\"en-US\"'),
-(445, 112, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(446, 112, 'Time', '1690686012'),
-(447, 112, 'CurrentCulture', '\"en-US\"'),
-(448, 112, 'CurrentUICulture', '\"en-US\"'),
-(449, 113, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(450, 113, 'Time', '1690689038'),
-(451, 113, 'CurrentCulture', '\"en-US\"'),
-(452, 113, 'CurrentUICulture', '\"en-US\"'),
-(453, 114, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(454, 114, 'Time', '1690690846'),
-(455, 114, 'CurrentCulture', '\"en-US\"'),
-(456, 114, 'CurrentUICulture', '\"en-US\"'),
-(457, 115, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(458, 115, 'Time', '1690692618'),
-(459, 115, 'CurrentCulture', '\"en-US\"'),
-(460, 115, 'CurrentUICulture', '\"en-US\"'),
-(461, 116, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(462, 116, 'Time', '1690693249'),
-(463, 116, 'CurrentCulture', '\"en-US\"'),
-(464, 116, 'CurrentUICulture', '\"en-US\"'),
-(465, 117, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(466, 117, 'Time', '1690696200'),
-(467, 117, 'CurrentCulture', '\"en-US\"'),
-(468, 117, 'CurrentUICulture', '\"en-US\"'),
-(469, 118, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(470, 118, 'Time', '1690696846'),
-(471, 118, 'CurrentCulture', '\"en-US\"'),
-(472, 118, 'CurrentUICulture', '\"en-US\"'),
-(473, 119, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(474, 119, 'Time', '1690699800'),
-(475, 119, 'CurrentCulture', '\"en-US\"'),
-(476, 119, 'CurrentUICulture', '\"en-US\"'),
-(477, 120, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
-(478, 120, 'Time', '1690700430'),
-(479, 120, 'CurrentCulture', '\"en-US\"'),
-(480, 120, 'CurrentUICulture', '\"en-US\"');
+(977, 245, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(978, 245, 'Time', '1691232019'),
+(979, 245, 'CurrentCulture', '\"en-US\"'),
+(980, 245, 'CurrentUICulture', '\"en-US\"'),
+(981, 246, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(982, 246, 'Time', '1691232650'),
+(983, 246, 'CurrentCulture', '\"en-US\"'),
+(984, 246, 'CurrentUICulture', '\"en-US\"'),
+(985, 247, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(986, 247, 'Time', '1691233211'),
+(987, 247, 'CurrentCulture', '\"en-US\"'),
+(988, 247, 'CurrentUICulture', '\"en-US\"'),
+(989, 248, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(990, 248, 'Time', '1691234425'),
+(991, 248, 'CurrentCulture', '\"en-US\"'),
+(992, 248, 'CurrentUICulture', '\"en-US\"'),
+(993, 249, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(994, 249, 'Time', '1691235004'),
+(995, 249, 'CurrentCulture', '\"en-US\"'),
+(996, 249, 'CurrentUICulture', '\"en-US\"'),
+(997, 250, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(998, 250, 'Time', '1691235908'),
+(999, 250, 'CurrentCulture', '\"en-US\"'),
+(1000, 250, 'CurrentUICulture', '\"en-US\"'),
+(1001, 251, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1002, 251, 'Time', '1691236869'),
+(1003, 251, 'CurrentCulture', '\"en-US\"'),
+(1004, 251, 'CurrentUICulture', '\"en-US\"'),
+(1005, 252, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1006, 252, 'Time', '1691244193'),
+(1007, 252, 'CurrentCulture', '\"en-US\"'),
+(1008, 252, 'CurrentUICulture', '\"en-US\"'),
+(1009, 253, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1010, 253, 'Time', '1691244929'),
+(1011, 253, 'CurrentCulture', '\"en-US\"'),
+(1012, 253, 'CurrentUICulture', '\"en-US\"'),
+(1013, 254, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1014, 254, 'Time', '1691245830'),
+(1015, 254, 'CurrentCulture', '\"en-US\"'),
+(1016, 254, 'CurrentUICulture', '\"en-US\"'),
+(1017, 255, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1018, 255, 'Time', '1691246731'),
+(1019, 255, 'CurrentCulture', '\"en-US\"'),
+(1020, 255, 'CurrentUICulture', '\"en-US\"'),
+(1021, 256, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1022, 256, 'Time', '1691247617'),
+(1023, 256, 'CurrentCulture', '\"en-US\"'),
+(1024, 256, 'CurrentUICulture', '\"en-US\"'),
+(1025, 257, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1026, 257, 'Time', '1691248518'),
+(1027, 257, 'CurrentCulture', '\"en-US\"'),
+(1028, 257, 'CurrentUICulture', '\"en-US\"'),
+(1029, 258, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1030, 258, 'Time', '1691249415'),
+(1031, 258, 'CurrentCulture', '\"en-US\"'),
+(1032, 258, 'CurrentUICulture', '\"en-US\"'),
+(1033, 259, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1034, 259, 'Time', '1691280283'),
+(1035, 259, 'CurrentCulture', '\"en-US\"'),
+(1036, 259, 'CurrentUICulture', '\"en-US\"'),
+(1037, 260, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1038, 260, 'Time', '1691280904'),
+(1039, 260, 'CurrentCulture', '\"en-US\"'),
+(1040, 260, 'CurrentUICulture', '\"en-US\"'),
+(1041, 261, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1042, 261, 'Time', '1691281805'),
+(1043, 261, 'CurrentCulture', '\"en-US\"'),
+(1044, 261, 'CurrentUICulture', '\"en-US\"'),
+(1045, 262, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1046, 262, 'Time', '1691282704'),
+(1047, 262, 'CurrentCulture', '\"en-US\"'),
+(1048, 262, 'CurrentUICulture', '\"en-US\"'),
+(1049, 263, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1050, 263, 'Time', '1691283602'),
+(1051, 263, 'CurrentCulture', '\"en-US\"'),
+(1052, 263, 'CurrentUICulture', '\"en-US\"'),
+(1053, 264, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1054, 264, 'Time', '1691284501'),
+(1055, 264, 'CurrentCulture', '\"en-US\"'),
+(1056, 264, 'CurrentUICulture', '\"en-US\"'),
+(1057, 265, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1058, 265, 'Time', '1691285402'),
+(1059, 265, 'CurrentCulture', '\"en-US\"'),
+(1060, 265, 'CurrentUICulture', '\"en-US\"'),
+(1061, 266, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1062, 266, 'Time', '1691286312'),
+(1063, 266, 'CurrentCulture', '\"en-US\"'),
+(1064, 266, 'CurrentUICulture', '\"en-US\"'),
+(1065, 267, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1066, 267, 'Time', '1691287203'),
+(1067, 267, 'CurrentCulture', '\"en-US\"'),
+(1068, 267, 'CurrentUICulture', '\"en-US\"'),
+(1069, 268, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1070, 268, 'Time', '1691288112'),
+(1071, 268, 'CurrentCulture', '\"en-US\"'),
+(1072, 268, 'CurrentUICulture', '\"en-US\"'),
+(1073, 269, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1074, 269, 'Time', '1691289004'),
+(1075, 269, 'CurrentCulture', '\"en-US\"'),
+(1076, 269, 'CurrentUICulture', '\"en-US\"'),
+(1077, 270, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1078, 270, 'Time', '1691289904'),
+(1079, 270, 'CurrentCulture', '\"en-US\"'),
+(1080, 270, 'CurrentUICulture', '\"en-US\"'),
+(1081, 271, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1082, 271, 'Time', '1691290809'),
+(1083, 271, 'CurrentCulture', '\"en-US\"'),
+(1084, 271, 'CurrentUICulture', '\"en-US\"'),
+(1085, 272, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1086, 272, 'Time', '1691291707'),
+(1087, 272, 'CurrentCulture', '\"en-US\"'),
+(1088, 272, 'CurrentUICulture', '\"en-US\"'),
+(1089, 273, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1090, 273, 'Time', '1691292607'),
+(1091, 273, 'CurrentCulture', '\"en-US\"'),
+(1092, 273, 'CurrentUICulture', '\"en-US\"'),
+(1093, 274, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1094, 274, 'Time', '1691293506'),
+(1095, 274, 'CurrentCulture', '\"en-US\"'),
+(1096, 274, 'CurrentUICulture', '\"en-US\"'),
+(1097, 275, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1098, 275, 'Time', '1691294467'),
+(1099, 275, 'CurrentCulture', '\"en-US\"'),
+(1100, 275, 'CurrentUICulture', '\"en-US\"'),
+(1101, 276, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1102, 276, 'Time', '1691295368'),
+(1103, 276, 'CurrentCulture', '\"en-US\"'),
+(1104, 276, 'CurrentUICulture', '\"en-US\"'),
+(1105, 277, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1106, 277, 'Time', '1691304597'),
+(1107, 277, 'CurrentCulture', '\"en-US\"'),
+(1108, 277, 'CurrentUICulture', '\"en-US\"'),
+(1109, 278, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1110, 278, 'Time', '1691305219'),
+(1111, 278, 'CurrentCulture', '\"en-US\"'),
+(1112, 278, 'CurrentUICulture', '\"en-US\"'),
+(1113, 279, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1114, 279, 'Time', '1691306120'),
+(1115, 279, 'CurrentCulture', '\"en-US\"'),
+(1116, 279, 'CurrentUICulture', '\"en-US\"'),
+(1117, 280, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1118, 280, 'Time', '1691307020'),
+(1119, 280, 'CurrentCulture', '\"en-US\"'),
+(1120, 280, 'CurrentUICulture', '\"en-US\"'),
+(1121, 281, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1122, 281, 'Time', '1691307906'),
+(1123, 281, 'CurrentCulture', '\"en-US\"'),
+(1124, 281, 'CurrentUICulture', '\"en-US\"'),
+(1125, 282, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1126, 282, 'Time', '1691308807'),
+(1127, 282, 'CurrentCulture', '\"en-US\"'),
+(1128, 282, 'CurrentUICulture', '\"en-US\"'),
+(1129, 283, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1130, 283, 'Time', '1691309708'),
+(1131, 283, 'CurrentCulture', '\"en-US\"'),
+(1132, 283, 'CurrentUICulture', '\"en-US\"'),
+(1133, 284, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1134, 284, 'Time', '1691310605'),
+(1135, 284, 'CurrentCulture', '\"en-US\"'),
+(1136, 284, 'CurrentUICulture', '\"en-US\"'),
+(1137, 285, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1138, 285, 'Time', '1691311502'),
+(1139, 285, 'CurrentCulture', '\"en-US\"'),
+(1140, 285, 'CurrentUICulture', '\"en-US\"'),
+(1141, 286, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1142, 286, 'Time', '1691312405'),
+(1143, 286, 'CurrentCulture', '\"en-US\"'),
+(1144, 286, 'CurrentUICulture', '\"en-US\"'),
+(1145, 287, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1146, 287, 'Time', '1691313632'),
+(1147, 287, 'CurrentCulture', '\"en-US\"'),
+(1148, 287, 'CurrentUICulture', '\"en-US\"'),
+(1149, 288, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1150, 288, 'Time', '1691314201'),
+(1151, 288, 'CurrentCulture', '\"en-US\"'),
+(1152, 288, 'CurrentUICulture', '\"en-US\"'),
+(1153, 289, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1154, 289, 'Time', '1691315101'),
+(1155, 289, 'CurrentCulture', '\"en-US\"'),
+(1156, 289, 'CurrentUICulture', '\"en-US\"'),
+(1157, 290, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1158, 290, 'Time', '1691316001'),
+(1159, 290, 'CurrentCulture', '\"en-US\"'),
+(1160, 290, 'CurrentUICulture', '\"en-US\"'),
+(1161, 291, 'RecurringJobId', '\"IScheduleService.ClearFiles\"'),
+(1162, 291, 'Time', '1691316902'),
+(1163, 291, 'CurrentCulture', '\"en-US\"'),
+(1164, 291, 'CurrentUICulture', '\"en-US\"');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirejobqueue`
+-- Table structure for table `hangfirejobqueue`
 --
 
 CREATE TABLE `hangfirejobqueue` (
@@ -758,7 +889,7 @@ CREATE TABLE `hangfirejobqueue` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirejobstate`
+-- Table structure for table `hangfirejobstate`
 --
 
 CREATE TABLE `hangfirejobstate` (
@@ -773,7 +904,7 @@ CREATE TABLE `hangfirejobstate` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirelist`
+-- Table structure for table `hangfirelist`
 --
 
 CREATE TABLE `hangfirelist` (
@@ -786,7 +917,7 @@ CREATE TABLE `hangfirelist` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfireserver`
+-- Table structure for table `hangfireserver`
 --
 
 CREATE TABLE `hangfireserver` (
@@ -796,16 +927,16 @@ CREATE TABLE `hangfireserver` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfireserver`
+-- Dumping data for table `hangfireserver`
 --
 
 INSERT INTO `hangfireserver` (`Id`, `Data`, `LastHeartbeat`) VALUES
-('trtheanh:23904:281881c2-7f2f-4537-97bd-d7a323286299', '{\"WorkerCount\":20,\"Queues\":[\"default\"],\"StartedAt\":\"2023-07-30T05:14:38.3818411Z\"}', '2023-07-30 07:09:11.320565');
+('trtheanh:18480:7eb10850-56dc-463b-813f-d626583ed6dc', '{\"WorkerCount\":20,\"Queues\":[\"default\"],\"StartedAt\":\"2023-08-06T09:20:32.5931158Z\"}', '2023-08-06 10:16:34.406548');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfireset`
+-- Table structure for table `hangfireset`
 --
 
 CREATE TABLE `hangfireset` (
@@ -817,16 +948,16 @@ CREATE TABLE `hangfireset` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfireset`
+-- Dumping data for table `hangfireset`
 --
 
 INSERT INTO `hangfireset` (`Id`, `Key`, `Value`, `Score`, `ExpireAt`) VALUES
-(1, 'recurring-jobs', 'IScheduleService.ClearFiles', 1690700000, NULL);
+(1, 'recurring-jobs', 'IScheduleService.ClearFiles', 1691320000, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hangfirestate`
+-- Table structure for table `hangfirestate`
 --
 
 CREATE TABLE `hangfirestate` (
@@ -839,62 +970,158 @@ CREATE TABLE `hangfirestate` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hangfirestate`
+-- Dumping data for table `hangfirestate`
 --
 
 INSERT INTO `hangfirestate` (`Id`, `JobId`, `Name`, `Reason`, `CreatedAt`, `Data`) VALUES
-(316, 106, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-29 06:50:06.780224', '{\"EnqueuedAt\":\"2023-07-29T06:50:06.7731945Z\",\"Queue\":\"default\"}'),
-(317, 106, 'Processing', NULL, '2023-07-29 06:50:14.948237', '{\"StartedAt\":\"2023-07-29T06:50:14.9366596Z\",\"ServerId\":\"trtheanh:20348:fdd7c6d5-b151-47b7-9bff-337980e4b130\",\"WorkerId\":\"e173cb4d-8f3d-4513-a15d-90d5b3b18019\"}'),
-(318, 106, 'Succeeded', NULL, '2023-07-29 06:50:14.983151', '{\"SucceededAt\":\"2023-07-29T06:50:14.9711565Z\",\"PerformanceDuration\":\"8\",\"Latency\":\"8211\"}'),
-(319, 107, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-29 07:00:22.477133', '{\"EnqueuedAt\":\"2023-07-29T07:00:22.4763783Z\",\"Queue\":\"default\"}'),
-(320, 107, 'Processing', NULL, '2023-07-29 07:00:25.500521', '{\"StartedAt\":\"2023-07-29T07:00:25.4980466Z\",\"ServerId\":\"trtheanh:20348:fdd7c6d5-b151-47b7-9bff-337980e4b130\",\"WorkerId\":\"f19da77f-158f-4dc6-b0f0-38757904b2ee\"}'),
-(321, 107, 'Succeeded', NULL, '2023-07-29 07:00:25.510150', '{\"SucceededAt\":\"2023-07-29T07:00:25.5062931Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"3036\"}'),
-(322, 108, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 01:46:22.590221', '{\"EnqueuedAt\":\"2023-07-30T01:46:22.5723583Z\",\"Queue\":\"default\"}'),
-(323, 108, 'Processing', NULL, '2023-07-30 01:46:32.545228', '{\"StartedAt\":\"2023-07-30T01:46:32.5313842Z\",\"ServerId\":\"trtheanh:26412:678235d6-f5cd-4615-927b-10acbe8aba1b\",\"WorkerId\":\"3c2d5123-7460-44dd-8b7e-0378619067a8\"}'),
-(324, 108, 'Succeeded', NULL, '2023-07-30 01:46:32.586737', '{\"SucceededAt\":\"2023-07-30T01:46:32.5697733Z\",\"PerformanceDuration\":\"11\",\"Latency\":\"10029\"}'),
-(325, 109, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 01:51:07.934215', '{\"EnqueuedAt\":\"2023-07-30T01:51:07.9332064Z\",\"Queue\":\"default\"}'),
-(326, 109, 'Processing', NULL, '2023-07-30 01:51:12.826207', '{\"StartedAt\":\"2023-07-30T01:51:12.8218618Z\",\"ServerId\":\"trtheanh:26412:678235d6-f5cd-4615-927b-10acbe8aba1b\",\"WorkerId\":\"363247cf-64b0-4561-b2fd-71dcbfcaf0b6\"}'),
-(327, 109, 'Succeeded', NULL, '2023-07-30 01:51:12.842255', '{\"SucceededAt\":\"2023-07-30T01:51:12.8359888Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"4914\"}'),
-(328, 110, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 02:00:07.285710', '{\"EnqueuedAt\":\"2023-07-30T02:00:07.2846954Z\",\"Queue\":\"default\"}'),
-(329, 110, 'Processing', NULL, '2023-07-30 02:00:13.402363', '{\"StartedAt\":\"2023-07-30T02:00:13.3976030Z\",\"ServerId\":\"trtheanh:26412:678235d6-f5cd-4615-927b-10acbe8aba1b\",\"WorkerId\":\"421de2b1-1249-4c70-8836-186f6e19fdf4\"}'),
-(330, 110, 'Succeeded', NULL, '2023-07-30 02:00:13.418512', '{\"SucceededAt\":\"2023-07-30T02:00:13.4126147Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"6141\"}'),
-(331, 111, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 02:50:40.381293', '{\"EnqueuedAt\":\"2023-07-30T02:50:40.3804782Z\",\"Queue\":\"default\"}'),
-(332, 111, 'Processing', NULL, '2023-07-30 02:50:46.284947', '{\"StartedAt\":\"2023-07-30T02:50:46.2815558Z\",\"ServerId\":\"trtheanh:26412:678235d6-f5cd-4615-927b-10acbe8aba1b\",\"WorkerId\":\"5ce4ff5f-b35e-475f-bb60-54351f09c170\"}'),
-(333, 111, 'Succeeded', NULL, '2023-07-30 02:50:46.301081', '{\"SucceededAt\":\"2023-07-30T02:50:46.2914594Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"5915\"}'),
-(334, 112, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 03:00:12.347451', '{\"EnqueuedAt\":\"2023-07-30T03:00:12.3465704Z\",\"Queue\":\"default\"}'),
-(335, 112, 'Processing', NULL, '2023-07-30 03:00:16.822143', '{\"StartedAt\":\"2023-07-30T03:00:16.8165956Z\",\"ServerId\":\"trtheanh:26412:678235d6-f5cd-4615-927b-10acbe8aba1b\",\"WorkerId\":\"382887b6-ddc7-4be7-925d-dc648c5645c1\"}'),
-(336, 112, 'Succeeded', NULL, '2023-07-30 03:00:16.839165', '{\"SucceededAt\":\"2023-07-30T03:00:16.8333629Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"4498\"}'),
-(337, 113, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 03:50:38.328146', '{\"EnqueuedAt\":\"2023-07-30T03:50:38.3115898Z\",\"Queue\":\"default\"}'),
-(338, 113, 'Processing', NULL, '2023-07-30 03:50:48.204738', '{\"StartedAt\":\"2023-07-30T03:50:48.1944762Z\",\"ServerId\":\"trtheanh:11556:e21b9dae-cd94-47f7-9090-17e9395e7b80\",\"WorkerId\":\"8914a3cf-0232-4ed6-816c-ea933531ef31\"}'),
-(339, 113, 'Succeeded', NULL, '2023-07-30 03:50:48.227796', '{\"SucceededAt\":\"2023-07-30T03:50:48.2173035Z\",\"PerformanceDuration\":\"7\",\"Latency\":\"9914\"}'),
-(340, 114, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 04:20:46.674801', '{\"EnqueuedAt\":\"2023-07-30T04:20:46.6741954Z\",\"Queue\":\"default\"}'),
-(341, 114, 'Processing', NULL, '2023-07-30 04:20:56.643444', '{\"StartedAt\":\"2023-07-30T04:20:56.6403943Z\",\"ServerId\":\"trtheanh:11556:7eddd9bc-4701-4588-9573-7826928c5319\",\"WorkerId\":\"2186e231-3fb4-4405-ad43-3ef0418675a8\"}'),
-(342, 114, 'Succeeded', NULL, '2023-07-30 04:20:56.656441', '{\"SucceededAt\":\"2023-07-30T04:20:56.6485554Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9999\"}'),
-(343, 115, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 04:50:18.424378', '{\"EnqueuedAt\":\"2023-07-30T04:50:18.4234512Z\",\"Queue\":\"default\"}'),
-(344, 115, 'Processing', NULL, '2023-07-30 04:50:28.297655', '{\"StartedAt\":\"2023-07-30T04:50:28.2949614Z\",\"ServerId\":\"trtheanh:11556:7eddd9bc-4701-4588-9573-7826928c5319\",\"WorkerId\":\"f6e99660-1180-4e00-94a5-24ca81f75a03\"}'),
-(345, 115, 'Succeeded', NULL, '2023-07-30 04:50:28.309523', '{\"SucceededAt\":\"2023-07-30T04:50:28.3043360Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9889\"}'),
-(346, 116, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 05:00:49.054883', '{\"EnqueuedAt\":\"2023-07-30T05:00:49.0543468Z\",\"Queue\":\"default\"}'),
-(347, 116, 'Processing', NULL, '2023-07-30 05:00:58.842927', '{\"StartedAt\":\"2023-07-30T05:00:58.8404011Z\",\"ServerId\":\"trtheanh:11556:7eddd9bc-4701-4588-9573-7826928c5319\",\"WorkerId\":\"68440acd-9d9a-46cf-bd18-e4c2fc182ad7\"}'),
-(348, 116, 'Succeeded', NULL, '2023-07-30 05:00:58.853048', '{\"SucceededAt\":\"2023-07-30T05:00:58.8485580Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9800\"}'),
-(349, 117, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 05:50:00.698796', '{\"EnqueuedAt\":\"2023-07-30T05:50:00.6921343Z\",\"Queue\":\"default\"}'),
-(350, 117, 'Processing', NULL, '2023-07-30 05:50:10.337813', '{\"StartedAt\":\"2023-07-30T05:50:10.3277157Z\",\"ServerId\":\"trtheanh:23904:281881c2-7f2f-4537-97bd-d7a323286299\",\"WorkerId\":\"43a42d19-ac65-4d09-a57b-6085ab99715a\"}'),
-(351, 117, 'Succeeded', NULL, '2023-07-30 05:50:10.360494', '{\"SucceededAt\":\"2023-07-30T05:50:10.3505741Z\",\"PerformanceDuration\":\"7\",\"Latency\":\"9665\"}'),
-(352, 118, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 06:00:46.491840', '{\"EnqueuedAt\":\"2023-07-30T06:00:46.4911985Z\",\"Queue\":\"default\"}'),
-(353, 118, 'Processing', NULL, '2023-07-30 06:00:46.941549', '{\"StartedAt\":\"2023-07-30T06:00:46.9386837Z\",\"ServerId\":\"trtheanh:23904:281881c2-7f2f-4537-97bd-d7a323286299\",\"WorkerId\":\"92157505-9dc5-4f3c-8f68-4a2f32c19a8e\"}'),
-(354, 118, 'Succeeded', NULL, '2023-07-30 06:00:46.951075', '{\"SucceededAt\":\"2023-07-30T06:00:46.9466347Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"463\"}'),
-(355, 119, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 06:50:00.046419', '{\"EnqueuedAt\":\"2023-07-30T06:50:00.0458825Z\",\"Queue\":\"default\"}'),
-(356, 119, 'Processing', NULL, '2023-07-30 06:50:02.579514', '{\"StartedAt\":\"2023-07-30T06:50:02.5769018Z\",\"ServerId\":\"trtheanh:23904:281881c2-7f2f-4537-97bd-d7a323286299\",\"WorkerId\":\"6ad76061-56e0-4951-ae23-2461a37520a6\"}'),
-(357, 119, 'Succeeded', NULL, '2023-07-30 06:50:02.588394', '{\"SucceededAt\":\"2023-07-30T06:50:02.5841242Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"2541\"}'),
-(358, 120, 'Enqueued', 'Triggered by recurring job scheduler', '2023-07-30 07:00:30.637015', '{\"EnqueuedAt\":\"2023-07-30T07:00:30.6353268Z\",\"Queue\":\"default\"}'),
-(359, 120, 'Processing', NULL, '2023-07-30 07:00:33.234832', '{\"StartedAt\":\"2023-07-30T07:00:33.2308972Z\",\"ServerId\":\"trtheanh:23904:281881c2-7f2f-4537-97bd-d7a323286299\",\"WorkerId\":\"6ad76061-56e0-4951-ae23-2461a37520a6\"}'),
-(360, 120, 'Succeeded', NULL, '2023-07-30 07:00:33.250620', '{\"SucceededAt\":\"2023-07-30T07:00:33.2435368Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"2616\"}');
+(733, 245, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 10:40:19.864606', '{\"EnqueuedAt\":\"2023-08-05T10:40:19.8621142Z\",\"Queue\":\"default\"}'),
+(734, 245, 'Processing', NULL, '2023-08-05 10:40:40.107951', '{\"StartedAt\":\"2023-08-05T10:40:40.1041913Z\",\"ServerId\":\"trtheanh:15824:f31991f9-7207-4d9f-95be-388f79046b2c\",\"WorkerId\":\"b37f107f-7e4e-45c0-92d9-6c917368b404\"}'),
+(735, 245, 'Succeeded', NULL, '2023-08-05 10:40:40.120243', '{\"SucceededAt\":\"2023-08-05T10:40:40.1160633Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"20265\"}'),
+(736, 246, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 10:50:50.425137', '{\"EnqueuedAt\":\"2023-08-05T10:50:50.4242057Z\",\"Queue\":\"default\"}'),
+(737, 246, 'Processing', NULL, '2023-08-05 10:50:50.577017', '{\"StartedAt\":\"2023-08-05T10:50:50.5743742Z\",\"ServerId\":\"trtheanh:15824:f31991f9-7207-4d9f-95be-388f79046b2c\",\"WorkerId\":\"eef4f13e-385e-4b68-a08a-e4ee6c3ce2da\"}'),
+(738, 246, 'Succeeded', NULL, '2023-08-05 10:50:50.586643', '{\"SucceededAt\":\"2023-08-05T10:50:50.5818533Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"164\"}'),
+(739, 247, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 11:00:11.534469', '{\"EnqueuedAt\":\"2023-08-05T11:00:11.5339420Z\",\"Queue\":\"default\"}'),
+(740, 247, 'Processing', NULL, '2023-08-05 11:00:13.084402', '{\"StartedAt\":\"2023-08-05T11:00:13.0799584Z\",\"ServerId\":\"trtheanh:15824:f31991f9-7207-4d9f-95be-388f79046b2c\",\"WorkerId\":\"def45da9-3f4d-4f9b-8414-b3a419dde514\"}'),
+(741, 247, 'Succeeded', NULL, '2023-08-05 11:00:13.099906', '{\"SucceededAt\":\"2023-08-05T11:00:13.0935671Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"1572\"}'),
+(742, 248, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 11:20:25.838508', '{\"EnqueuedAt\":\"2023-08-05T11:20:25.8174795Z\",\"Queue\":\"default\"}'),
+(743, 248, 'Processing', NULL, '2023-08-05 11:20:35.742899', '{\"StartedAt\":\"2023-08-05T11:20:35.7307074Z\",\"ServerId\":\"trtheanh:19524:b3f591d1-174a-411a-9bb2-36ffb4cfc2ab\",\"WorkerId\":\"f6985fdf-ba88-4142-a54a-fcfa21f66eb1\"}'),
+(744, 248, 'Succeeded', NULL, '2023-08-05 11:20:35.777977', '{\"SucceededAt\":\"2023-08-05T11:20:35.7645288Z\",\"PerformanceDuration\":\"15\",\"Latency\":\"9952\"}'),
+(745, 249, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 11:30:04.216073', '{\"EnqueuedAt\":\"2023-08-05T11:30:04.2030156Z\",\"Queue\":\"default\"}'),
+(746, 249, 'Processing', NULL, '2023-08-05 11:30:12.829420', '{\"StartedAt\":\"2023-08-05T11:30:12.8189556Z\",\"ServerId\":\"trtheanh:28336:16e816c1-79db-4542-b4d9-c76d15ec2ce7\",\"WorkerId\":\"2e6ce5aa-1e82-4bf6-93e2-090b0de9ebe6\"}'),
+(747, 249, 'Succeeded', NULL, '2023-08-05 11:30:12.872474', '{\"SucceededAt\":\"2023-08-05T11:30:12.8549173Z\",\"PerformanceDuration\":\"13\",\"Latency\":\"8681\"}'),
+(748, 250, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 11:45:08.721120', '{\"EnqueuedAt\":\"2023-08-05T11:45:08.7204751Z\",\"Queue\":\"default\"}'),
+(749, 250, 'Processing', NULL, '2023-08-05 11:45:14.009322', '{\"StartedAt\":\"2023-08-05T11:45:14.0039516Z\",\"ServerId\":\"trtheanh:28336:16e816c1-79db-4542-b4d9-c76d15ec2ce7\",\"WorkerId\":\"10304930-7882-4b7d-8cc4-697421bfb994\"}'),
+(750, 250, 'Succeeded', NULL, '2023-08-05 11:45:14.025269', '{\"SucceededAt\":\"2023-08-05T11:45:14.0193637Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"5312\"}'),
+(751, 251, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 12:01:09.794924', '{\"EnqueuedAt\":\"2023-08-05T12:01:09.7943353Z\",\"Queue\":\"default\"}'),
+(752, 251, 'Processing', NULL, '2023-08-05 12:01:14.950490', '{\"StartedAt\":\"2023-08-05T12:01:14.9475653Z\",\"ServerId\":\"trtheanh:28336:16e816c1-79db-4542-b4d9-c76d15ec2ce7\",\"WorkerId\":\"548d1235-4770-4ae4-a373-c08acc6509a3\"}'),
+(753, 251, 'Succeeded', NULL, '2023-08-05 12:01:14.961832', '{\"SucceededAt\":\"2023-08-05T12:01:14.9570204Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"5167\"}'),
+(754, 252, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 14:03:13.792343', '{\"EnqueuedAt\":\"2023-08-05T14:03:13.7704641Z\",\"Queue\":\"default\"}'),
+(755, 252, 'Processing', NULL, '2023-08-05 14:03:23.761499', '{\"StartedAt\":\"2023-08-05T14:03:23.7510827Z\",\"ServerId\":\"trtheanh:25012:29616a7b-8b85-41ad-b72a-70fa9bb2cdb0\",\"WorkerId\":\"5da68d3d-fc30-4a50-b0d0-bb6f949c72fa\"}'),
+(756, 252, 'Succeeded', NULL, '2023-08-05 14:03:23.788706', '{\"SucceededAt\":\"2023-08-05T14:03:23.7770653Z\",\"PerformanceDuration\":\"9\",\"Latency\":\"10015\"}'),
+(757, 253, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 14:15:29.466980', '{\"EnqueuedAt\":\"2023-08-05T14:15:29.4659638Z\",\"Queue\":\"default\"}'),
+(758, 253, 'Processing', NULL, '2023-08-05 14:15:34.469736', '{\"StartedAt\":\"2023-08-05T14:15:34.4662799Z\",\"ServerId\":\"trtheanh:25012:29616a7b-8b85-41ad-b72a-70fa9bb2cdb0\",\"WorkerId\":\"ccc3dad9-7640-450e-b31b-46c62d38e459\"}'),
+(759, 253, 'Succeeded', NULL, '2023-08-05 14:15:34.480582', '{\"SucceededAt\":\"2023-08-05T14:15:34.4766077Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"5016\"}'),
+(760, 254, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 14:30:30.389845', '{\"EnqueuedAt\":\"2023-08-05T14:30:30.3888609Z\",\"Queue\":\"default\"}'),
+(761, 254, 'Processing', NULL, '2023-08-05 14:30:35.262539', '{\"StartedAt\":\"2023-08-05T14:30:35.2598761Z\",\"ServerId\":\"trtheanh:25012:29616a7b-8b85-41ad-b72a-70fa9bb2cdb0\",\"WorkerId\":\"3c16de05-e96e-4046-bcdc-2dc8a140a161\"}'),
+(762, 254, 'Succeeded', NULL, '2023-08-05 14:30:35.277497', '{\"SucceededAt\":\"2023-08-05T14:30:35.2721500Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"4888\"}'),
+(763, 255, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 14:45:31.297606', '{\"EnqueuedAt\":\"2023-08-05T14:45:31.2968737Z\",\"Queue\":\"default\"}'),
+(764, 255, 'Processing', NULL, '2023-08-05 14:45:36.005919', '{\"StartedAt\":\"2023-08-05T14:45:36.0032934Z\",\"ServerId\":\"trtheanh:25012:29616a7b-8b85-41ad-b72a-70fa9bb2cdb0\",\"WorkerId\":\"90d4caf2-c9fb-4846-86c8-02ecad267d15\"}'),
+(765, 255, 'Succeeded', NULL, '2023-08-05 14:45:36.018130', '{\"SucceededAt\":\"2023-08-05T14:45:36.0127765Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"4723\"}'),
+(766, 256, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 15:00:17.231923', '{\"EnqueuedAt\":\"2023-08-05T15:00:17.2312710Z\",\"Queue\":\"default\"}'),
+(767, 256, 'Processing', NULL, '2023-08-05 15:00:26.798513', '{\"StartedAt\":\"2023-08-05T15:00:26.7947477Z\",\"ServerId\":\"trtheanh:25012:29616a7b-8b85-41ad-b72a-70fa9bb2cdb0\",\"WorkerId\":\"00bd8d0a-6f44-4991-808e-9822250fe86e\"}'),
+(768, 256, 'Succeeded', NULL, '2023-08-05 15:00:26.810679', '{\"SucceededAt\":\"2023-08-05T15:00:26.8062709Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"9580\"}'),
+(769, 257, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 15:15:18.149522', '{\"EnqueuedAt\":\"2023-08-05T15:15:18.1489384Z\",\"Queue\":\"default\"}'),
+(770, 257, 'Processing', NULL, '2023-08-05 15:15:27.636523', '{\"StartedAt\":\"2023-08-05T15:15:27.6342875Z\",\"ServerId\":\"trtheanh:25012:29616a7b-8b85-41ad-b72a-70fa9bb2cdb0\",\"WorkerId\":\"d85e812b-ea6a-4c07-a54e-5432cf7a07ff\"}'),
+(771, 257, 'Succeeded', NULL, '2023-08-05 15:15:27.647515', '{\"SucceededAt\":\"2023-08-05T15:15:27.6427325Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9501\"}'),
+(772, 258, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-05 15:30:15.248070', '{\"EnqueuedAt\":\"2023-08-05T15:30:15.2333009Z\",\"Queue\":\"default\"}'),
+(773, 258, 'Processing', NULL, '2023-08-05 15:30:20.169179', '{\"StartedAt\":\"2023-08-05T15:30:20.1604780Z\",\"ServerId\":\"trtheanh:13772:a811126b-be72-4c64-9575-bd9fa64f9462\",\"WorkerId\":\"c1ea4d7d-1ae5-4308-83fd-08118738517b\"}'),
+(774, 258, 'Succeeded', NULL, '2023-08-05 15:30:20.194926', '{\"SucceededAt\":\"2023-08-05T15:30:20.1841920Z\",\"PerformanceDuration\":\"8\",\"Latency\":\"4958\"}'),
+(775, 259, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 00:04:43.403963', '{\"EnqueuedAt\":\"2023-08-06T00:04:43.3866576Z\",\"Queue\":\"default\"}'),
+(776, 259, 'Processing', NULL, '2023-08-06 00:04:53.373771', '{\"StartedAt\":\"2023-08-06T00:04:53.3649805Z\",\"ServerId\":\"trtheanh:27892:108b48dd-8dcd-46c5-9027-972f95755226\",\"WorkerId\":\"add5338f-e5f4-47f9-bbd1-f4237fbaf127\"}'),
+(777, 259, 'Succeeded', NULL, '2023-08-06 00:04:53.401257', '{\"SucceededAt\":\"2023-08-06T00:04:53.3883823Z\",\"PerformanceDuration\":\"7\",\"Latency\":\"10009\"}'),
+(778, 260, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 00:15:04.379297', '{\"EnqueuedAt\":\"2023-08-06T00:15:04.3787285Z\",\"Queue\":\"default\"}'),
+(779, 260, 'Processing', NULL, '2023-08-06 00:15:13.909372', '{\"StartedAt\":\"2023-08-06T00:15:13.9061193Z\",\"ServerId\":\"trtheanh:27892:108b48dd-8dcd-46c5-9027-972f95755226\",\"WorkerId\":\"b1b898d9-387f-4257-819e-047f3afb7a52\"}'),
+(780, 260, 'Succeeded', NULL, '2023-08-06 00:15:13.921050', '{\"SucceededAt\":\"2023-08-06T00:15:13.9154190Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9544\"}'),
+(781, 261, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 00:30:05.346706', '{\"EnqueuedAt\":\"2023-08-06T00:30:05.3457447Z\",\"Queue\":\"default\"}'),
+(782, 261, 'Processing', NULL, '2023-08-06 00:30:05.785440', '{\"StartedAt\":\"2023-08-06T00:30:05.7820841Z\",\"ServerId\":\"trtheanh:27892:108b48dd-8dcd-46c5-9027-972f95755226\",\"WorkerId\":\"37c42f28-62a4-40d6-bc9d-21804d6a3a7e\"}'),
+(783, 261, 'Succeeded', NULL, '2023-08-06 00:30:05.795806', '{\"SucceededAt\":\"2023-08-06T00:30:05.7916863Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"453\"}'),
+(784, 262, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 00:45:04.278376', '{\"EnqueuedAt\":\"2023-08-06T00:45:04.2773722Z\",\"Queue\":\"default\"}'),
+(785, 262, 'Processing', NULL, '2023-08-06 00:45:04.615668', '{\"StartedAt\":\"2023-08-06T00:45:04.6115506Z\",\"ServerId\":\"trtheanh:27892:108b48dd-8dcd-46c5-9027-972f95755226\",\"WorkerId\":\"8fbbb09d-07c2-428f-bab7-6471dc40f8a7\"}'),
+(786, 262, 'Succeeded', NULL, '2023-08-06 00:45:04.634357', '{\"SucceededAt\":\"2023-08-06T00:45:04.6267641Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"356\"}'),
+(787, 263, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 01:00:02.016332', '{\"EnqueuedAt\":\"2023-08-06T01:00:02.0157523Z\",\"Queue\":\"default\"}'),
+(788, 263, 'Processing', NULL, '2023-08-06 01:00:02.357969', '{\"StartedAt\":\"2023-08-06T01:00:02.3541120Z\",\"ServerId\":\"trtheanh:27892:108b48dd-8dcd-46c5-9027-972f95755226\",\"WorkerId\":\"d8c71301-b3da-4ad0-9d6f-a9c64b55dd44\"}'),
+(789, 263, 'Succeeded', NULL, '2023-08-06 01:00:02.372175', '{\"SucceededAt\":\"2023-08-06T01:00:02.3682156Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"355\"}'),
+(790, 264, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 01:15:01.299654', '{\"EnqueuedAt\":\"2023-08-06T01:15:01.2906572Z\",\"Queue\":\"default\"}'),
+(791, 264, 'Processing', NULL, '2023-08-06 01:15:05.189742', '{\"StartedAt\":\"2023-08-06T01:15:05.1794720Z\",\"ServerId\":\"trtheanh:17016:7df0f650-c785-4984-838b-b944d1fe4773\",\"WorkerId\":\"cd5f3d4b-e264-4fd3-8144-d0af87d90f7a\"}'),
+(792, 264, 'Succeeded', NULL, '2023-08-06 01:15:05.217002', '{\"SucceededAt\":\"2023-08-06T01:15:05.2055175Z\",\"PerformanceDuration\":\"9\",\"Latency\":\"3922\"}'),
+(793, 265, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 01:30:02.937737', '{\"EnqueuedAt\":\"2023-08-06T01:30:02.9369838Z\",\"Queue\":\"default\"}'),
+(794, 265, 'Processing', NULL, '2023-08-06 01:30:06.047663', '{\"StartedAt\":\"2023-08-06T01:30:06.0447839Z\",\"ServerId\":\"trtheanh:17016:7df0f650-c785-4984-838b-b944d1fe4773\",\"WorkerId\":\"125cf6e3-9577-43f5-9cb5-2eaf52c994a0\"}'),
+(795, 265, 'Succeeded', NULL, '2023-08-06 01:30:06.058720', '{\"SucceededAt\":\"2023-08-06T01:30:06.0547713Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"3123\"}'),
+(796, 266, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 01:45:12.397489', '{\"EnqueuedAt\":\"2023-08-06T01:45:12.3967821Z\",\"Queue\":\"default\"}'),
+(797, 266, 'Processing', NULL, '2023-08-06 01:45:16.948698', '{\"StartedAt\":\"2023-08-06T01:45:16.9441243Z\",\"ServerId\":\"trtheanh:17016:7df0f650-c785-4984-838b-b944d1fe4773\",\"WorkerId\":\"4cd0b6c6-3682-475b-aba1-2be7b44032ee\"}'),
+(798, 266, 'Succeeded', NULL, '2023-08-06 01:45:16.978928', '{\"SucceededAt\":\"2023-08-06T01:45:16.9729277Z\",\"PerformanceDuration\":\"6\",\"Latency\":\"4584\"}'),
+(799, 267, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 02:00:03.332126', '{\"EnqueuedAt\":\"2023-08-06T02:00:03.3249957Z\",\"Queue\":\"default\"}'),
+(800, 267, 'Processing', NULL, '2023-08-06 02:00:08.113704', '{\"StartedAt\":\"2023-08-06T02:00:08.1006622Z\",\"ServerId\":\"trtheanh:25556:ef046163-b267-4d4c-8010-13c5c65a8c3f\",\"WorkerId\":\"f0ff6821-e14b-442a-9a33-ea1a6fe9ba0b\"}'),
+(801, 267, 'Succeeded', NULL, '2023-08-06 02:00:08.144323', '{\"SucceededAt\":\"2023-08-06T02:00:08.1336285Z\",\"PerformanceDuration\":\"8\",\"Latency\":\"4824\"}'),
+(802, 268, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 02:15:12.210593', '{\"EnqueuedAt\":\"2023-08-06T02:15:12.2100473Z\",\"Queue\":\"default\"}'),
+(803, 268, 'Processing', NULL, '2023-08-06 02:15:18.880616', '{\"StartedAt\":\"2023-08-06T02:15:18.8749251Z\",\"ServerId\":\"trtheanh:25556:ef046163-b267-4d4c-8010-13c5c65a8c3f\",\"WorkerId\":\"e5e67bb1-d0a9-41b3-9275-2f01c9f4d085\"}'),
+(804, 268, 'Succeeded', NULL, '2023-08-06 02:15:18.900990', '{\"SucceededAt\":\"2023-08-06T02:15:18.8945371Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"6697\"}'),
+(805, 269, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 02:30:04.899365', '{\"EnqueuedAt\":\"2023-08-06T02:30:04.8887575Z\",\"Queue\":\"default\"}'),
+(806, 269, 'Processing', NULL, '2023-08-06 02:30:11.283030', '{\"StartedAt\":\"2023-08-06T02:30:11.2732400Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"40ba188c-397e-4b0a-93b5-19f0f50feff8\"}'),
+(807, 269, 'Succeeded', NULL, '2023-08-06 02:30:11.321146', '{\"SucceededAt\":\"2023-08-06T02:30:11.3057803Z\",\"PerformanceDuration\":\"9\",\"Latency\":\"6432\"}'),
+(808, 270, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 02:45:04.653306', '{\"EnqueuedAt\":\"2023-08-06T02:45:04.6525317Z\",\"Queue\":\"default\"}'),
+(809, 270, 'Processing', NULL, '2023-08-06 02:45:12.058283', '{\"StartedAt\":\"2023-08-06T02:45:12.0546178Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"c003cd93-a66f-4c38-894e-f0eed2e4b625\"}'),
+(810, 270, 'Succeeded', NULL, '2023-08-06 02:45:12.074359', '{\"SucceededAt\":\"2023-08-06T02:45:12.0688728Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"7428\"}'),
+(811, 271, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 03:00:09.075088', '{\"EnqueuedAt\":\"2023-08-06T03:00:09.0745041Z\",\"Queue\":\"default\"}'),
+(812, 271, 'Processing', NULL, '2023-08-06 03:00:12.814669', '{\"StartedAt\":\"2023-08-06T03:00:12.8103020Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"c037f751-f673-4270-b754-668ebf85989c\"}'),
+(813, 271, 'Succeeded', NULL, '2023-08-06 03:00:12.834561', '{\"SucceededAt\":\"2023-08-06T03:00:12.8283487Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"3765\"}'),
+(814, 272, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 03:15:07.208660', '{\"EnqueuedAt\":\"2023-08-06T03:15:07.2079604Z\",\"Queue\":\"default\"}'),
+(815, 272, 'Processing', NULL, '2023-08-06 03:15:13.532357', '{\"StartedAt\":\"2023-08-06T03:15:13.5270554Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"f06f22ed-3f0a-40d4-b5e8-e0bdf2807d51\"}'),
+(816, 272, 'Succeeded', NULL, '2023-08-06 03:15:13.552492', '{\"SucceededAt\":\"2023-08-06T03:15:13.5463830Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"6351\"}'),
+(817, 273, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 03:30:07.439987', '{\"EnqueuedAt\":\"2023-08-06T03:30:07.4393726Z\",\"Queue\":\"default\"}'),
+(818, 273, 'Processing', NULL, '2023-08-06 03:30:14.298207', '{\"StartedAt\":\"2023-08-06T03:30:14.2944234Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"d522843c-9f69-462a-a937-1c0183769867\"}'),
+(819, 273, 'Succeeded', NULL, '2023-08-06 03:30:14.317198', '{\"SucceededAt\":\"2023-08-06T03:30:14.3119678Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"6885\"}'),
+(820, 274, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 03:45:06.395945', '{\"EnqueuedAt\":\"2023-08-06T03:45:06.3952435Z\",\"Queue\":\"default\"}'),
+(821, 274, 'Processing', NULL, '2023-08-06 03:45:15.081626', '{\"StartedAt\":\"2023-08-06T03:45:15.0771372Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"08112bd2-b27e-492a-a09c-a5c8a3f81f92\"}'),
+(822, 274, 'Succeeded', NULL, '2023-08-06 03:45:15.096925', '{\"SucceededAt\":\"2023-08-06T03:45:15.0914561Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"8709\"}'),
+(823, 275, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 04:01:07.390786', '{\"EnqueuedAt\":\"2023-08-06T04:01:07.3903460Z\",\"Queue\":\"default\"}'),
+(824, 275, 'Processing', NULL, '2023-08-06 04:01:15.918292', '{\"StartedAt\":\"2023-08-06T04:01:15.9154572Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"f06f22ed-3f0a-40d4-b5e8-e0bdf2807d51\"}'),
+(825, 275, 'Succeeded', NULL, '2023-08-06 04:01:15.926771', '{\"SucceededAt\":\"2023-08-06T04:01:15.9229443Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"8538\"}'),
+(826, 276, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 04:16:08.343428', '{\"EnqueuedAt\":\"2023-08-06T04:16:08.3429751Z\",\"Queue\":\"default\"}'),
+(827, 276, 'Processing', NULL, '2023-08-06 04:16:16.710154', '{\"StartedAt\":\"2023-08-06T04:16:16.7077493Z\",\"ServerId\":\"trtheanh:7540:ddf35066-f353-4811-a91f-9a30ffd7caa7\",\"WorkerId\":\"f06f22ed-3f0a-40d4-b5e8-e0bdf2807d51\"}'),
+(828, 276, 'Succeeded', NULL, '2023-08-06 04:16:16.718392', '{\"SucceededAt\":\"2023-08-06T04:16:16.7143435Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"8376\"}'),
+(829, 277, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 06:49:57.937800', '{\"EnqueuedAt\":\"2023-08-06T06:49:57.9093510Z\",\"Queue\":\"default\"}'),
+(830, 277, 'Processing', NULL, '2023-08-06 06:50:07.891191', '{\"StartedAt\":\"2023-08-06T06:50:07.8803901Z\",\"ServerId\":\"trtheanh:22168:011f32bd-dfb6-4a55-947b-e77e6da1455e\",\"WorkerId\":\"8fbb4f6d-abe9-41ca-8948-16c93f2ee744\"}'),
+(831, 277, 'Succeeded', NULL, '2023-08-06 06:50:07.932179', '{\"SucceededAt\":\"2023-08-06T06:50:07.9171266Z\",\"PerformanceDuration\":\"18\",\"Latency\":\"10008\"}'),
+(832, 278, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 07:00:19.203809', '{\"EnqueuedAt\":\"2023-08-06T07:00:19.1855137Z\",\"Queue\":\"default\"}'),
+(833, 278, 'Processing', NULL, '2023-08-06 07:00:24.094816', '{\"StartedAt\":\"2023-08-06T07:00:24.0849648Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"ea6d3f1f-24a7-4a42-b28d-37850182ba97\"}'),
+(834, 278, 'Succeeded', NULL, '2023-08-06 07:00:24.116020', '{\"SucceededAt\":\"2023-08-06T07:00:24.1074712Z\",\"PerformanceDuration\":\"7\",\"Latency\":\"4934\"}'),
+(835, 279, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 07:15:20.021002', '{\"EnqueuedAt\":\"2023-08-06T07:15:20.0202953Z\",\"Queue\":\"default\"}'),
+(836, 279, 'Processing', NULL, '2023-08-06 07:15:24.920509', '{\"StartedAt\":\"2023-08-06T07:15:24.9165190Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"60681e69-59e9-44b1-9dff-b5b0b2653e7f\"}'),
+(837, 279, 'Succeeded', NULL, '2023-08-06 07:15:24.931882', '{\"SucceededAt\":\"2023-08-06T07:15:24.9272027Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"4913\"}'),
+(838, 280, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 07:30:20.918098', '{\"EnqueuedAt\":\"2023-08-06T07:30:20.9173126Z\",\"Queue\":\"default\"}'),
+(839, 280, 'Processing', NULL, '2023-08-06 07:30:25.717901', '{\"StartedAt\":\"2023-08-06T07:30:25.7144823Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"f4037386-c149-4ff9-8ac5-b80bbabb3639\"}'),
+(840, 280, 'Succeeded', NULL, '2023-08-06 07:30:25.729573', '{\"SucceededAt\":\"2023-08-06T07:30:25.7251556Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"4815\"}'),
+(841, 281, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 07:45:06.866314', '{\"EnqueuedAt\":\"2023-08-06T07:45:06.8657263Z\",\"Queue\":\"default\"}'),
+(842, 281, 'Processing', NULL, '2023-08-06 07:45:16.510519', '{\"StartedAt\":\"2023-08-06T07:45:16.5076137Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"a2eeecf1-4a8f-41f2-a608-5993f09d96bf\"}'),
+(843, 281, 'Succeeded', NULL, '2023-08-06 07:45:16.521038', '{\"SucceededAt\":\"2023-08-06T07:45:16.5164243Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9658\"}'),
+(844, 282, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 08:00:07.861451', '{\"EnqueuedAt\":\"2023-08-06T08:00:07.8607544Z\",\"Queue\":\"default\"}'),
+(845, 282, 'Processing', NULL, '2023-08-06 08:00:17.390696', '{\"StartedAt\":\"2023-08-06T08:00:17.3871399Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"a2eeecf1-4a8f-41f2-a608-5993f09d96bf\"}'),
+(846, 282, 'Succeeded', NULL, '2023-08-06 08:00:17.401003', '{\"SucceededAt\":\"2023-08-06T08:00:17.3965491Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9542\"}'),
+(847, 283, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 08:15:08.751308', '{\"EnqueuedAt\":\"2023-08-06T08:15:08.7505713Z\",\"Queue\":\"default\"}'),
+(848, 283, 'Processing', NULL, '2023-08-06 08:15:18.167788', '{\"StartedAt\":\"2023-08-06T08:15:18.1650723Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"c814c5d6-d7cc-4b57-bb32-2c6ae585d0aa\"}'),
+(849, 283, 'Succeeded', NULL, '2023-08-06 08:15:18.176895', '{\"SucceededAt\":\"2023-08-06T08:15:18.1727915Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"9428\"}'),
+(850, 284, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 08:30:05.295768', '{\"EnqueuedAt\":\"2023-08-06T08:30:05.2951087Z\",\"Queue\":\"default\"}'),
+(851, 284, 'Processing', NULL, '2023-08-06 08:30:08.991758', '{\"StartedAt\":\"2023-08-06T08:30:08.9894818Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"22730e86-38c2-4377-b1be-f8cbd2e0e89e\"}'),
+(852, 284, 'Succeeded', NULL, '2023-08-06 08:30:09.003517', '{\"SucceededAt\":\"2023-08-06T08:30:08.9986769Z\",\"PerformanceDuration\":\"3\",\"Latency\":\"3707\"}'),
+(853, 285, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 08:45:02.843318', '{\"EnqueuedAt\":\"2023-08-06T08:45:02.8427434Z\",\"Queue\":\"default\"}'),
+(854, 285, 'Processing', NULL, '2023-08-06 08:45:09.812196', '{\"StartedAt\":\"2023-08-06T08:45:09.8099659Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"9f28e6a1-3622-4ca5-9734-6ad6fd22ee2f\"}'),
+(855, 285, 'Succeeded', NULL, '2023-08-06 08:45:09.822052', '{\"SucceededAt\":\"2023-08-06T08:45:09.8187553Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"6982\"}'),
+(856, 286, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 09:00:05.164773', '{\"EnqueuedAt\":\"2023-08-06T09:00:05.1642740Z\",\"Queue\":\"default\"}'),
+(857, 286, 'Processing', NULL, '2023-08-06 09:00:10.633526', '{\"StartedAt\":\"2023-08-06T09:00:10.6174535Z\",\"ServerId\":\"trtheanh:27180:11e056e5-004e-44f5-a16e-c65c1d071701\",\"WorkerId\":\"a9dea6b9-e156-4124-ba8e-eb0ebc8f373a\"}'),
+(858, 286, 'Succeeded', NULL, '2023-08-06 09:00:10.644394', '{\"SucceededAt\":\"2023-08-06T09:00:10.6394933Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"5479\"}'),
+(859, 287, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 09:20:32.875782', '{\"EnqueuedAt\":\"2023-08-06T09:20:32.8376902Z\",\"Queue\":\"default\"}'),
+(860, 287, 'Processing', NULL, '2023-08-06 09:20:42.805879', '{\"StartedAt\":\"2023-08-06T09:20:42.7968707Z\",\"ServerId\":\"trtheanh:18480:7eb10850-56dc-463b-813f-d626583ed6dc\",\"WorkerId\":\"c0b0cc1d-36ce-4984-82ae-e4cad2672421\"}'),
+(861, 287, 'Succeeded', NULL, '2023-08-06 09:20:42.839489', '{\"SucceededAt\":\"2023-08-06T09:20:42.8257277Z\",\"PerformanceDuration\":\"13\",\"Latency\":\"9995\"}'),
+(862, 288, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 09:30:01.616633', '{\"EnqueuedAt\":\"2023-08-06T09:30:01.6159373Z\",\"Queue\":\"default\"}'),
+(863, 288, 'Processing', NULL, '2023-08-06 09:30:03.871044', '{\"StartedAt\":\"2023-08-06T09:30:03.8683574Z\",\"ServerId\":\"trtheanh:18480:7eb10850-56dc-463b-813f-d626583ed6dc\",\"WorkerId\":\"d4abc796-557d-4523-a2c1-d75a27a75d8d\"}'),
+(864, 288, 'Succeeded', NULL, '2023-08-06 09:30:03.886519', '{\"SucceededAt\":\"2023-08-06T09:30:03.8807740Z\",\"PerformanceDuration\":\"4\",\"Latency\":\"2267\"}'),
+(865, 289, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 09:45:01.303801', '{\"EnqueuedAt\":\"2023-08-06T09:45:01.3028120Z\",\"Queue\":\"default\"}'),
+(866, 289, 'Processing', NULL, '2023-08-06 09:45:04.733399', '{\"StartedAt\":\"2023-08-06T09:45:04.7288868Z\",\"ServerId\":\"trtheanh:18480:7eb10850-56dc-463b-813f-d626583ed6dc\",\"WorkerId\":\"a5c900b1-2df1-4e74-94dd-2ef3277bb434\"}'),
+(867, 289, 'Succeeded', NULL, '2023-08-06 09:45:04.753323', '{\"SucceededAt\":\"2023-08-06T09:45:04.7444324Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"3453\"}'),
+(868, 290, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 10:00:01.268599', '{\"EnqueuedAt\":\"2023-08-06T10:00:01.2680974Z\",\"Queue\":\"default\"}'),
+(869, 290, 'Processing', NULL, '2023-08-06 10:00:05.517978', '{\"StartedAt\":\"2023-08-06T10:00:05.5119007Z\",\"ServerId\":\"trtheanh:18480:7eb10850-56dc-463b-813f-d626583ed6dc\",\"WorkerId\":\"51dbf3c6-bb0c-462b-b602-4b8b71a05006\"}'),
+(870, 290, 'Succeeded', NULL, '2023-08-06 10:00:05.539405', '{\"SucceededAt\":\"2023-08-06T10:00:05.5305193Z\",\"PerformanceDuration\":\"2\",\"Latency\":\"4276\"}'),
+(871, 291, 'Enqueued', 'Triggered by recurring job scheduler', '2023-08-06 10:15:02.945379', '{\"EnqueuedAt\":\"2023-08-06T10:15:02.9446210Z\",\"Queue\":\"default\"}'),
+(872, 291, 'Processing', NULL, '2023-08-06 10:15:07.015372', '{\"StartedAt\":\"2023-08-06T10:15:07.0112393Z\",\"ServerId\":\"trtheanh:18480:7eb10850-56dc-463b-813f-d626583ed6dc\",\"WorkerId\":\"51dbf3c6-bb0c-462b-b602-4b8b71a05006\"}'),
+(873, 291, 'Succeeded', NULL, '2023-08-06 10:15:07.032140', '{\"SucceededAt\":\"2023-08-06T10:15:07.0258327Z\",\"PerformanceDuration\":\"1\",\"Latency\":\"4094\"}');
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `department`
+-- Indexes for table `department`
 --
 ALTER TABLE `department`
   ADD PRIMARY KEY (`DepartmentId`),
@@ -902,7 +1129,7 @@ ALTER TABLE `department`
   ADD KEY `IDX_department_DepartmentName` (`DepartmentName`);
 
 --
--- Chỉ mục cho bảng `employee`
+-- Indexes for table `employee`
 --
 ALTER TABLE `employee`
   ADD PRIMARY KEY (`EmployeeId`),
@@ -911,42 +1138,42 @@ ALTER TABLE `employee`
   ADD KEY `IDX_employee_EmployeeName` (`FullName`);
 
 --
--- Chỉ mục cho bảng `employeelayout`
+-- Indexes for table `employeelayout`
 --
 ALTER TABLE `employeelayout`
   ADD PRIMARY KEY (`EmployeeLayoutId`),
   ADD UNIQUE KEY `UK_EmployeeLayout_EmployeeLayoutId` (`EmployeeLayoutId`);
 
 --
--- Chỉ mục cho bảng `hangfireaggregatedcounter`
+-- Indexes for table `hangfireaggregatedcounter`
 --
 ALTER TABLE `hangfireaggregatedcounter`
   ADD PRIMARY KEY (`Id`),
   ADD UNIQUE KEY `IX_HangfireCounterAggregated_Key` (`Key`);
 
 --
--- Chỉ mục cho bảng `hangfirecounter`
+-- Indexes for table `hangfirecounter`
 --
 ALTER TABLE `hangfirecounter`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `IX_HangfireCounter_Key` (`Key`);
 
 --
--- Chỉ mục cho bảng `hangfirehash`
+-- Indexes for table `hangfirehash`
 --
 ALTER TABLE `hangfirehash`
   ADD PRIMARY KEY (`Id`),
   ADD UNIQUE KEY `IX_HangfireHash_Key_Field` (`Key`,`Field`);
 
 --
--- Chỉ mục cho bảng `hangfirejob`
+-- Indexes for table `hangfirejob`
 --
 ALTER TABLE `hangfirejob`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `IX_HangfireJob_StateName` (`StateName`);
 
 --
--- Chỉ mục cho bảng `hangfirejobparameter`
+-- Indexes for table `hangfirejobparameter`
 --
 ALTER TABLE `hangfirejobparameter`
   ADD PRIMARY KEY (`Id`),
@@ -954,133 +1181,133 @@ ALTER TABLE `hangfirejobparameter`
   ADD KEY `FK_HangfireJobParameter_Job` (`JobId`);
 
 --
--- Chỉ mục cho bảng `hangfirejobqueue`
+-- Indexes for table `hangfirejobqueue`
 --
 ALTER TABLE `hangfirejobqueue`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `IX_HangfireJobQueue_QueueAndFetchedAt` (`Queue`,`FetchedAt`);
 
 --
--- Chỉ mục cho bảng `hangfirejobstate`
+-- Indexes for table `hangfirejobstate`
 --
 ALTER TABLE `hangfirejobstate`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `FK_HangfireJobState_Job` (`JobId`);
 
 --
--- Chỉ mục cho bảng `hangfirelist`
+-- Indexes for table `hangfirelist`
 --
 ALTER TABLE `hangfirelist`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Chỉ mục cho bảng `hangfireserver`
+-- Indexes for table `hangfireserver`
 --
 ALTER TABLE `hangfireserver`
   ADD PRIMARY KEY (`Id`);
 
 --
--- Chỉ mục cho bảng `hangfireset`
+-- Indexes for table `hangfireset`
 --
 ALTER TABLE `hangfireset`
   ADD PRIMARY KEY (`Id`),
   ADD UNIQUE KEY `IX_HangfireSet_Key_Value` (`Key`,`Value`);
 
 --
--- Chỉ mục cho bảng `hangfirestate`
+-- Indexes for table `hangfirestate`
 --
 ALTER TABLE `hangfirestate`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `FK_HangfireHangFire_State_Job` (`JobId`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `hangfireaggregatedcounter`
+-- AUTO_INCREMENT for table `hangfireaggregatedcounter`
 --
 ALTER TABLE `hangfireaggregatedcounter`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=135;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=317;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirecounter`
+-- AUTO_INCREMENT for table `hangfirecounter`
 --
 ALTER TABLE `hangfirecounter`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=361;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=874;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirehash`
+-- AUTO_INCREMENT for table `hangfirehash`
 --
 ALTER TABLE `hangfirehash`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=368;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=884;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirejob`
+-- AUTO_INCREMENT for table `hangfirejob`
 --
 ALTER TABLE `hangfirejob`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=121;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=292;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirejobparameter`
+-- AUTO_INCREMENT for table `hangfirejobparameter`
 --
 ALTER TABLE `hangfirejobparameter`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=481;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1165;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirejobqueue`
+-- AUTO_INCREMENT for table `hangfirejobqueue`
 --
 ALTER TABLE `hangfirejobqueue`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=121;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=292;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirejobstate`
+-- AUTO_INCREMENT for table `hangfirejobstate`
 --
 ALTER TABLE `hangfirejobstate`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirelist`
+-- AUTO_INCREMENT for table `hangfirelist`
 --
 ALTER TABLE `hangfirelist`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `hangfireset`
+-- AUTO_INCREMENT for table `hangfireset`
 --
 ALTER TABLE `hangfireset`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157375;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=456751;
 
 --
--- AUTO_INCREMENT cho bảng `hangfirestate`
+-- AUTO_INCREMENT for table `hangfirestate`
 --
 ALTER TABLE `hangfirestate`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=361;
+  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=874;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `employee`
+-- Constraints for table `employee`
 --
 ALTER TABLE `employee`
   ADD CONSTRAINT `FK_employee_DepartmentId` FOREIGN KEY (`DepartmentId`) REFERENCES `department` (`DepartmentId`) ON DELETE NO ACTION;
 
 --
--- Các ràng buộc cho bảng `hangfirejobparameter`
+-- Constraints for table `hangfirejobparameter`
 --
 ALTER TABLE `hangfirejobparameter`
   ADD CONSTRAINT `FK_HangfireJobParameter_Job` FOREIGN KEY (`JobId`) REFERENCES `hangfirejob` (`Id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Các ràng buộc cho bảng `hangfirejobstate`
+-- Constraints for table `hangfirejobstate`
 --
 ALTER TABLE `hangfirejobstate`
   ADD CONSTRAINT `FK_HangfireJobState_Job` FOREIGN KEY (`JobId`) REFERENCES `hangfirejob` (`Id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Các ràng buộc cho bảng `hangfirestate`
+-- Constraints for table `hangfirestate`
 --
 ALTER TABLE `hangfirestate`
   ADD CONSTRAINT `FK_HangfireHangFire_State_Job` FOREIGN KEY (`JobId`) REFERENCES `hangfirejob` (`Id`) ON DELETE CASCADE ON UPDATE CASCADE;

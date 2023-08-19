@@ -27,7 +27,6 @@
   height: calc(
     100% - 32px - 16px - 24px
   ); /* -header_height -button_height - column_gap */
-  background-color: red;
   display: flex;
   flex-direction: column;
   box-shadow: rgba(0, 0, 0, 0.039) 0px 3px 20px;

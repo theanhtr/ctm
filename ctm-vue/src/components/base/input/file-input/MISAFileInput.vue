@@ -11,9 +11,12 @@
       @mouseenter="hoverInput = true"
       @mouseleave="hoverInput = false"
       @change="$emit('insert-file')"
+      @focus="isFocusInput = true"
+      @focusout="isFocusInput = false"
       class="file-input__input"
       :style="styleInput"
       accept=".xlsx"
+      :tabindex="tabindex"
     />
 
     <misa-tooltip v-if="errorText !== '' && hoverInput">{{
@@ -29,6 +32,7 @@ export default {
   data() {
     return {
       hoverInput: false,
+      isFocusInput: false,
     };
   },
 
@@ -43,9 +47,6 @@ export default {
     width: {
       default: "460px",
     },
-    placeholder: {
-      default: "Kéo/ thả tệp vào đây hoặc bấm vào đây",
-    },
     inputRequired: {
       default: true,
     },
@@ -53,6 +54,9 @@ export default {
       default: "",
     },
     file: {
+      default: "",
+    },
+    tabindex: {
       default: "",
     },
   },
@@ -74,9 +78,18 @@ export default {
 
     /**
      * Xử lý khi file lỗi thì không thêm vào
+     * @author: TTANH (23/07/2023)
      */
     setInputToEmpty() {
       this.$refs.input.value = "";
+    },
+
+    /**
+     * Focus vào input chính
+     * @author: TTANH (23/07/2023)
+     */
+    focus() {
+      this.$refs.input.focus();
     },
   },
 
@@ -100,7 +113,7 @@ export default {
     borderInputColor() {
       if (this.errorText !== "") {
         return "red";
-      } else if (this.hoverInput) {
+      } else if (this.hoverInput || this.isFocusInput) {
         return "var(--primary-btn--hover-background-color)";
       } else {
         return "var(--border-color-default)";

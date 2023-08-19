@@ -2,7 +2,9 @@
   <div class="paging">
     <div class="paging-left">
       <div class="total-records">
-        Tổng số: <strong>{{ modelValue.totalRecord }}</strong> bản ghi
+        {{ $t("component.paging.total") }}:
+        <strong>{{ modelValue.totalRecord }}</strong>
+        {{ $t("component.paging.record") }}
       </div>
     </div>
     <div class="paging-right">
@@ -12,6 +14,7 @@
         borderRadius="var(--border-radius-default)"
         :dataDropdown="pagingDataDropdown"
         :dataDropdownTop="true"
+        :dataDropdownSelectedValue="modelValue.pageSize"
         @clickItem="changePageSize"
         >{{ pagingTitle }}</misa-button
       >
@@ -24,7 +27,7 @@
           class="m-r-13"
           @clickBtnContainer="clickPreviousPage"
         >
-          Trước
+          {{ $t("component.paging.previous") }}
         </misa-button>
         <misa-button
           type="link"
@@ -51,7 +54,7 @@
           class="m-l-13 m-r-8"
           @clickBtnContainer="clickNextPage"
         >
-          Sau
+          {{ $t("component.paging.next") }}
         </misa-button>
       </div>
     </div>
@@ -60,6 +63,7 @@
 
 <script>
 import { findIndexByAttribute } from "@/helper/common.js";
+import { CommonErrorHandle } from "@/helper/error-handle.js";
 
 export default {
   name: "MISAPaging",
@@ -84,32 +88,27 @@ export default {
         {
           id: 10,
           value: 10,
-          title:
-            10 + this.$_MISAResource[this.$store.state.langCode].Paging.Title,
+          title: this.$t("component.paging.recordPerPage", { count: 10 }),
         },
         {
           id: 20,
           value: 20,
-          title:
-            20 + this.$_MISAResource[this.$store.state.langCode].Paging.Title,
+          title: this.$t("component.paging.recordPerPage", { count: 20 }),
         },
         {
           id: 30,
           value: 30,
-          title:
-            30 + this.$_MISAResource[this.$store.state.langCode].Paging.Title,
+          title: this.$t("component.paging.recordPerPage", { count: 30 }),
         },
         {
           id: 50,
           value: 50,
-          title:
-            50 + this.$_MISAResource[this.$store.state.langCode].Paging.Title,
+          title: this.$t("component.paging.recordPerPage", { count: 50 }),
         },
         {
           id: 100,
           value: 100,
-          title:
-            100 + this.$_MISAResource[this.$store.state.langCode].Paging.Title,
+          title: this.$t("component.paging.recordPerPage", { count: 100 }),
         },
       ],
 
@@ -226,15 +225,11 @@ export default {
       );
 
       if (index !== -1) {
-        return (
-          this.pagingDataDropdown[index].value +
-          this.$_MISAResource[this.$store.state.langCode].Paging.Title
-        );
+        return this.$t("component.paging.recordPerPage", {
+          count: this.pagingDataDropdown[index].value,
+        });
       } else {
-        return (
-          this.pagingDataDropdown[index].value +
-          this.$_MISAResource[this.$store.state.langCode].Paging.Error
-        );
+        CommonErrorHandle();
       }
     },
 
@@ -265,10 +260,8 @@ export default {
 
   watch: {
     modelValue: {
-      handler: function (newValue, oldValue) {
-        if (newValue.pageNumber !== oldValue.pageNumber) {
-          this.currentIndexShow = newValue.pageNumber;
-        }
+      handler: function (newValue) {
+        this.currentIndexShow = newValue.pageNumber;
       },
 
       deep: true,

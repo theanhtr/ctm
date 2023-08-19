@@ -4,7 +4,7 @@
       <div class="header__left">
         <misa-icon
           icon="sidebar__control--grey"
-          tooltip="Thu gọn sidebar"
+          :tooltip="$t('mainContent.tooltipCollapseSidebar')"
           @click="collapseSidebar"
           v-if="$store.state.isExpandSidebar"
         ></misa-icon>
@@ -21,12 +21,44 @@
           >misa_test_db</misa-button
         >
       </div>
-      <misa-icon icon="header__download" tooltip="Tải tệp excel" />
+      <misa-icon
+        icon="header__download"
+        :tooltip="$t('mainContent.headerDownload')"
+      />
       <div class="header__right">
+        <div class="change-language flex-row">
+          <misa-icon
+            icon="flag-vi"
+            :tooltip="$t('mainContent.changeLanguage.vi')"
+            width="24px"
+            height="18px"
+            class="change-language__item"
+            :class="
+              $store.state.langCode === 'vi'
+                ? 'change-language__item--active'
+                : ''
+            "
+            @click="$store.commit('setLangCode', 'vi')"
+          />
+          |
+          <misa-icon
+            icon="flag-en"
+            :tooltip="$t('mainContent.changeLanguage.en')"
+            width="24px"
+            height="18px"
+            class="change-language__item"
+            :class="
+              $store.state.langCode === 'en'
+                ? 'change-language__item--active'
+                : ''
+            "
+            @click="$store.commit('setLangCode', 'en')"
+          />
+        </div>
         <misa-search-input
           v-model="searchText"
           width="200px"
-          placeholder="Nhập từ khóa tìm kiếm"
+          :placeholder="$t('mainContent.headerSearchPlaceholder')"
         />
         <div class="header__action-right">
           <misa-button
@@ -40,7 +72,7 @@
               'header__setting--' +
               (headerButtonHover['header__setting'] ? 'white' : 'grey')
             "
-            tooltip="Các tiện ích và thiết lập"
+            :tooltip="$t('mainContent.headerSettingTooltip')"
           />
           <misa-button
             type="icon"
@@ -53,7 +85,7 @@
               'header__message--' +
               (headerButtonHover['header__message'] ? 'white' : 'grey')
             "
-            tooltip="Trao đổi giữa DN và KTDV"
+            :tooltip="$t('mainContent.headerMessageTooltip')"
           />
           <misa-button
             type="icon"
@@ -66,7 +98,7 @@
               'header__question--' +
               (headerButtonHover['header__question'] ? 'white' : 'grey')
             "
-            tooltip="Giúp"
+            :tooltip="$t('mainContent.headerHelpTooltip')"
           />
           <misa-button
             type="icon"
@@ -79,10 +111,13 @@
               'header__noti--' +
               (headerButtonHover['header__noti'] ? 'white' : 'grey')
             "
-            tooltip="Thông báo"
+            :tooltip="$t('mainContent.headerNotificationTooltip')"
           />
         </div>
-        <div class="header__account-info" title="Thông tin người dùng">
+        <div
+          class="header__account-info"
+          :title="$t('mainContent.headerAccountInfo')"
+        >
           <div class="account-avatar"></div>
           <div class="account-name">Trần Thế Anh</div>
           <misa-icon scale="0.7" icon="dropdown--light-black" />
@@ -134,7 +169,7 @@ export default {
 
 #main-content {
   height: 100%;
-  width: calc(100% - 180px);
+  width: calc(100% - 200px);
   display: flex;
   flex-direction: column;
 }

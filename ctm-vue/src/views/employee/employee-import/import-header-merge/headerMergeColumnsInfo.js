@@ -1,7 +1,11 @@
+import MISAResource from "../../../../resource/resource.js";
+import store from "../../../../store/index.js";
+
 export var headerMergeColumnsInfo = [
   {
     id: "isRequired",
-    name: "Thông tin bắt buộc",
+    name: MISAResource[store.state.langCode].importExcel.headerMerge
+      .headerMergeColumnsInfo.requiredInformation,
     size: 200,
     textAlign: "center",
     format: "checkbox",
@@ -10,7 +14,8 @@ export var headerMergeColumnsInfo = [
   },
   {
     id: "showName",
-    name: "Cột trên phần mềm",
+    name: MISAResource[store.state.langCode].importExcel.headerMerge
+      .headerMergeColumnsInfo.softwareColumn,
     size: 245,
     textAlign: "left",
     format: "text",
@@ -19,7 +24,8 @@ export var headerMergeColumnsInfo = [
   },
   {
     id: "excelColumnIndex",
-    name: "Cột trên tệp dữ liệu",
+    name: MISAResource[store.state.langCode].importExcel.headerMerge
+      .headerMergeColumnsInfo.dataFileColumn,
     size: 255,
     textAlign: "left",
     format: "input-combobox",
@@ -28,7 +34,8 @@ export var headerMergeColumnsInfo = [
   },
   {
     id: "description",
-    name: "Diễn giải",
+    name: MISAResource[store.state.langCode].importExcel.headerMerge
+      .headerMergeColumnsInfo.description,
     size: 765,
     textAlign: "left",
     format: "text",

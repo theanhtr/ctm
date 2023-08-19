@@ -1,6 +1,6 @@
 .sidebar {
   height: 100%;
-  width: 180px;
+  width: 200px;
   background-color: var(--slide-bar-background-color);
   display: flex;
   flex-direction: column;
@@ -22,11 +22,20 @@
   cursor: pointer;
 }
 
-.sidebar__logo-container .logo {
+.sidebar__logo-container .logo-vi {
   flex: 1;
   height: 32px;
   background-size: auto 32px;
   background-image: url(../../../assets/img/Logo_Module_TiengViet_White.66947422.svg);
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.sidebar__logo-container .logo-en {
+  flex: 1;
+  height: 32px;
+  background-size: auto 32px;
+  background-image: url(../../../assets/img/Logo_Module_TiengAnh_White.6f592bc6.svg);
   background-repeat: no-repeat;
   cursor: pointer;
 }

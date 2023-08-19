@@ -1,3 +1,16 @@
+/* cờ các nước */
+.flag-vi {
+  background-position: -1648px -262px;
+  width: 24px;
+  height: 18px;
+}
+
+.flag-en {
+  background-position: -1688px -262px;
+  width: 24px;
+  height: 18px;
+}
+
 /* header */
 .header__download {
   background-position: -648px -145px;
